@@ -29,15 +29,15 @@ $di->set('session', function () {
 $di->set('dbconn', function() {
    return [
         'master' => [
-            'dsn'      => "mysql:host=localhost;dbname=wired;charset=utf8",
-            'username' => "root",
-            'password' => "dbtmdals",
+            'dsn'      => "mysql:host=localhost;dbname=dbname;charset=utf8",
+            'username' => "user",
+            'password' => "password",
             'charset'  => "utf8",
         ],
         'slave' => [
-            'dsn'      => "mysql:host=localhost;dbname=wired;charset=utf8",
-            'username' => "root",
-            'password' => "dbtmdals",
+            'dsn'      => "mysql:host=localhost;dbname=dbname;charset=utf8",
+            'username' => "user",
+            'password' => "password",
             'charset'  => "utf8",
         ],
     ];
