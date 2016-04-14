@@ -31,6 +31,7 @@
     foreach($domains as $environment => $domain) {
         if(in_array(getenv('HTTP_HOST'), $domain)) {
             $di = require_once(__DIR__.'/../config/localhost.php');
+            $di->set('ENVIRONMENT', $environment);
             $app->setDI($di);
             break;
         }
