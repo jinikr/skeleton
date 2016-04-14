@@ -21,33 +21,20 @@
 }
 
 {
-    $di = new Phalcon\Di\FactoryDefault();
-
-    $di->set('session', function () {
-        $session = new Phalcon\Session\Adapter\Files();
-        $session->start();
-
-        return $session;
-     });
-
-    $di->set('dbconn', function() {
-       return [
-            'master' => [
-                'dsn'      => "mysql:host=localhost;dbname=wired;charset=utf8",
-                'username' => "root",
-                'password' => "dbtmdals",
-                'charset'  => "utf8",
-            ],
-            'slave' => [
-                'dsn'      => "mysql:host=localhost;dbname=wired;charset=utf8",
-                'username' => "root",
-                'password' => "dbtmdals",
-                'charset'  => "utf8",
-            ],
-        ];
-    });
-
-    $app->setDI($di);
+    $domains = [
+        'localhost'   => ['localhost', 'papi.wish.com'],
+        'development' => ['www.devel.com'],
+        'staging'     => ['www.staging.com'],
+        'production'  => ['www.production.com']
+    ];
+    // environment config load
+    foreach($domains as $environment => $domain) {
+        if(in_array(getenv('HTTP_HOST'), $domain)) {
+            $di = require_once(__DIR__.'/../config/localhost.php');
+            $app->setDI($di);
+            break;
+        }
+    }
 }
 
 {
