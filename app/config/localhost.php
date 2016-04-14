@@ -10,6 +10,7 @@
     ini_set('track_errors', 'On');
     ini_set('session.cookie_lifetime', '0');
     ini_set('session.cookie_path', '/');
+
     if (false == in_array(getenv('REMOTE_ADDR'), array('000.000.000.000'))) {
         //header("HTTP/1.0 404 Not Found");
         //exit();
