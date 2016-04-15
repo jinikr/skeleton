@@ -17,6 +17,31 @@
     }
 }
 
+Peanut\Db\Driver::setConnectInfo([
+    'master' => [
+        'dsn'      => "mysql:host=localhost;dbname=wired;charset=utf8",
+        'username' => "root",
+        'password' => "dbtmdals",
+        'charset'  => "utf8",
+        'options'  => [
+            \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+            \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
+            \PDO::ATTR_EMULATE_PREPARES => false
+        ]
+    ],
+    'slave' => [
+        'dsn'      => "mysql:host=localhost;dbname=wired;charset=utf8",
+        'username' => "root",
+        'password' => "dbtmdals",
+        'charset'  => "utf8",
+        'options'  => [
+            \PDO::ATTR_ERRMODE => \PDO::ERRMODE_EXCEPTION,
+            \PDO::ATTR_DEFAULT_FETCH_MODE => \PDO::FETCH_ASSOC,
+            \PDO::ATTR_EMULATE_PREPARES => false
+        ]
+    ],
+]);
+
 $di = new Phalcon\Di\FactoryDefault();
 
 $di->set('session', function () {
@@ -24,23 +49,6 @@ $di->set('session', function () {
     $session->start();
 
     return $session;
- });
-
-$di->set('dbconn', function() {
-   return [
-        'master' => [
-            'dsn'      => "mysql:host=localhost;dbname=dbname;charset=utf8",
-            'username' => "user",
-            'password' => "password",
-            'charset'  => "utf8",
-        ],
-        'slave' => [
-            'dsn'      => "mysql:host=localhost;dbname=dbname;charset=utf8",
-            'username' => "user",
-            'password' => "password",
-            'charset'  => "utf8",
-        ],
-    ];
 });
 
 return $di;

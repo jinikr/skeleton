@@ -1,10 +1,14 @@
 <?php
 
-namespace app\controllers;
+namespace App\Controllers;
 
-class v2 extends \Phalcon\Mvc\Controller
+class V2 extends \Phalcon\Mvc\Controller
 {
 
+    /**
+     * @brief index
+     * @return http response object
+     */
     public function index()
     {
         $response = $this->response;
@@ -16,12 +20,18 @@ class v2 extends \Phalcon\Mvc\Controller
         return $response;
     }
 
+    /**
+     * @brief getInfo
+     * @param string $name
+     * @param string $ext
+     * @return http response object
+     */
     public function getInfo($name, $ext)
     {
         $response = $this->response;
         $request = $this->request;
 
-        $users = \app\models\user::getUserList();
+        $users = \App\Models\User::getUserList();
         pr($users);
         $response->setContent('v2 getInfo '.$name.'.'.$ext);
 

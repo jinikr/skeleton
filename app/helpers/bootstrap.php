@@ -1,19 +1,9 @@
 <?php
 
 {
-    //require_once __DIR__.'/../helpers/debug.php';
+    require_once __DIR__."/../../vendor/autoload.php";
+    // require_once __DIR__.'/../helpers/debug.php';
     require_once __DIR__.'/function.php';
-    //require_once __DIR__."/../../vendor/autoload.php";
-}
-
-{
-    $loader = new Phalcon\Loader();
-    $loader->registerNamespaces(
-        array(
-           "app"         => "../app"
-        )
-    );
-    $loader->register();
 }
 
 {
@@ -28,9 +18,9 @@
         'production'  => ['www.production.com']
     ];
     // environment config load
-    foreach($domains as $environment => $domain) {
-        if(in_array(getenv('HTTP_HOST'), $domain)) {
-            $di = require_once(__DIR__.'/../config/localhost.php');
+    foreach ($domains as $environment => $domain) {
+        if (true === in_array(getenv('HTTP_HOST'), $domain)) {
+            $di = require_once __DIR__.'/../config/'.$environment.'.php';
             $di->set('ENVIRONMENT', $environment);
             $app->setDI($di);
             break;
@@ -39,9 +29,8 @@
 }
 
 {
-    if(($prefix = getParam(1)) && is_file(__DIR__.'/../collections/'.$prefix.'.php'))
-    {
-        $collection = require_once(__DIR__.'/../collections/'.$prefix.'.php');
+    if (($prefix = getParam(1)) && is_file(__DIR__.'/../collections/'.$prefix.'.php')) {
+        $collection = require_once __DIR__.'/../collections/'.$prefix.'.php';
         $app->mount($collection);
     }
 }

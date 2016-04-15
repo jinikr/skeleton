@@ -1,8 +1,8 @@
 <?php
 
-namespace app\models;
+namespace App\Models;
 
-use app\helpers\db;
+use Peanut\Db\Driver as db;
 
 class user
 {
@@ -14,7 +14,7 @@ class user
 
     public static function getUserList()
     {
-        return db::conn('slave')->gets("select * from user");
+        return db::conn('slave')->gets("show databases");
     }
 
     public static function putUser($name, $age)

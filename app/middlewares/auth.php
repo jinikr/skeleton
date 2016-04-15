@@ -1,8 +1,8 @@
 <?php
 
-namespace app\middlewares;
+namespace App\Middlewares;
 
-class auth
+class Auth
 {
 
     public static function call($app)

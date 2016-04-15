@@ -1,9 +1,19 @@
 {
+    "require": {
+        "peanut/db": "dev-master"
+    },
     "autoload": {
         "psr-4": {
-            "app\\": "app"
+            "App\\": "app/",
+            "Peanut\\Db\\": "vendor/peanut/db/"
         }
     },
+    "repositories": [
+        {
+            "type": "git",
+            "url":  "https://github.com/yejune/peanut-database.git"
+        }
+    ],
     "require-dev": {
         "squizlabs/php_codesniffer": "*",
         "phing/phing": "*",

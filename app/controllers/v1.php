@@ -1,8 +1,8 @@
 <?php
 
-namespace app\controllers;
+namespace App\Controllers;
 
-class v1 extends \Phalcon\Mvc\Controller
+class V1 extends \Phalcon\Mvc\Controller
 {
 
     public function index()

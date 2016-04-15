@@ -5,7 +5,7 @@ return call_user_func(function() {
     $collection = new Phalcon\Mvc\Micro\Collection();
 
     $collection->setPrefix('/v1');
-    $collection->setHandler('\app\controllers\v1', true);
+    $collection->setHandler('\App\Controllers\V1', true);
 
     $collection->get('/', 'index');
     $collection->get('/info12', 'getInfo');

@@ -1,8 +1,8 @@
 <?php
 
-namespace app\traits;
+namespace App\Traits;
 
-trait singleton {
+trait Singleton {
     private static $instance; //The single instance
 
     public static function getInstance()
