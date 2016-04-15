@@ -3,5 +3,10 @@
         "psr-4": {
             "app\\": "app"
         }
+    },
+    "require-dev": {
+        "squizlabs/php_codesniffer": "*",
+        "phing/phing": "*",
+        "mayflower/php-codebrowser": "*"
     }
 }
