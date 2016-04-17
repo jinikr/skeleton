@@ -19,7 +19,7 @@ class V2 extends \Phalcon\Mvc\Controller
 
         $name = 'index';
         $response->setContent('v2 index');
-
+	phpinfo();
         return $response;
     }
 

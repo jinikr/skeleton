@@ -29,6 +29,8 @@ try {
 
     $app->handle();
 } catch (\Exception $e) {
-    pr($e->getMessage());
-    pr($e->getTraceAsString());
+    echo '<pre>';
+    print_r($e->getMessage());
+    print_r($e->getTraceAsString());
+    echo '</pre>';
 }//end try
