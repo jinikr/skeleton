@@ -2,6 +2,9 @@
 
 namespace App\Controllers;
 
+use Peanut\Db\Driver as Db;
+use App\Models\User as UserModel;
+
 class V2 extends \Phalcon\Mvc\Controller
 {
 
@@ -12,7 +15,7 @@ class V2 extends \Phalcon\Mvc\Controller
     public function index()
     {
         $response = $this->response;
-        $request = $this->request;
+        $request  = $this->request;
 
         $name = 'index';
         $response->setContent('v2 index');
@@ -29,11 +32,17 @@ class V2 extends \Phalcon\Mvc\Controller
     public function getInfo($name, $ext)
     {
         $response = $this->response;
-        $request = $this->request;
+        $request  = $this->request;
 
-        $users = \App\Models\User::getUserList();
-        pr($users);
-        $response->setContent('v2 getInfo '.$name.'.'.$ext);
+        UserModel::getUserList();
+        $pointSeq = Db::name('master')->transaction(
+            function() use  ($response)
+            {
+                $userSeq = UserModel::setUser('test2'.time());
+                return $pointSeq = UserModel::setUserPoint($userSeq, 100);
+            }
+        );
+        $response->setContent('v2 getInfo '.$name.$pointSeq.'.'.$ext);
 
         return $response;
     }

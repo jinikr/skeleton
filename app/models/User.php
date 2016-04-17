@@ -2,24 +2,36 @@
 
 namespace App\Models;
 
-use Peanut\Db\Driver as db;
+use Peanut\Db\Driver as Db;
 
 class user
 {
 
     public static function getUser($name)
     {
-        return db::conn('slave')->get("select * from user where name = :name", [':name' => $name]);
+        return Db::name('slave')->get("select * from user where user_name = :user_name", [
+            ':user_name' => $name
+        ]);
     }
 
     public static function getUserList()
     {
-        return db::conn('slave')->gets("show databases");
+        return Db::name('slave')->gets("select * from user");
     }
 
-    public static function putUser($name, $age)
+    public static function setUser($name)
     {
-        return db::conn('master')->put("insert into user (name, age) values (:name, :age", []);
+        return Db::name('master')->setId("insert into user (user_name) values (:user_name)", [
+            ':user_name' => $name
+        ]);
+    }
+
+    public static function setUserPoint(int $userSeq, int $point)
+    {
+        return Db::name('master')->setId("insert into point (user_seq, point) values (:user_seq, :point)", [
+            ':user_seq' => $userSeq,
+            ':point' => $point
+        ]);
     }
 
 }

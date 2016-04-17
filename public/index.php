@@ -23,7 +23,7 @@ try {
     );
     $app->after(
         function () use ($app) {
-                $content = $app->response->getContent();
+            $content = $app->response->getContent();
         }
     );
 
