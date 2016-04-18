@@ -1,38 +1,103 @@
 <?php
 
 {
-    require_once __DIR__."/../../vendor/autoload.php";
-    // require_once __DIR__.'/../helpers/debug.php';
-    require_once __DIR__.'/function.php';
+    require_once __BASE__."/vendor/autoload.php";
+    //require_once __BASE__.'/app/helpers/debug.php';
+    require_once __BASE__.'/app/helpers/function.php';
 }
 
+class Bootstrap
 {
-    $app = new Phalcon\Mvc\Micro();
-}
+    private $di;
+    private $collection;
+    private $config = [];
 
-{
-    $domains = [
-        'localhost'   => ['localhost', 'papi.wish.com'],
-        'development' => ['www.devel.com'],
-        'staging'     => ['www.staging.com'],
-        'production'  => ['www.production.com']
-    ];
-    // environment config load
-    foreach ($domains as $environment => $domain) {
-        if (true === in_array(getenv('HTTP_HOST'), $domain)) {
-            $di = require_once __DIR__.'/../config/'.$environment.'.php';
-            $di->set('ENVIRONMENT', $environment);
-            $app->setDI($di);
-            break;
+    public function __construct($di)
+    {
+        $this->di = $di;
+    }
+
+    protected function initConfig()
+    {
+        if(is_file(__BASE__.'/app/config/environment.php'))
+        {
+            $environments = require_once __BASE__.'/app/config/environment.php';
+            if(true === is_array($environments))
+            {
+                foreach ($environments as $environment => $domain)
+                {
+                    if (true === in_array(getenv('HTTP_HOST'), $domain)
+                        && is_file(__BASE__.'/app/config/environment/'.$environment.'.php'))
+                    {
+                        $this->config = require_once __BASE__.'/app/config/environment/'.$environment.'.php';
+                        break;
+                    }
+                }
+            }
+        }
+
+        if(!$this->config)
+        {
+            throw new \Exception(__BASE__.'/app/config/environment.php 을 확인하세요.');
         }
     }
-}
 
-{
-    if (($prefix = getParam(1)) && is_file(__DIR__.'/../collections/'.$prefix.'.php')) {
-        $collection = require_once __DIR__.'/../collections/'.$prefix.'.php';
-        $app->mount($collection);
+    protected function initSession()
+    {
+        $this->di['session'] = function () {
+            $session = new Phalcon\Session\Adapter\Files();
+            $session->start();
+            return $session;
+        };
+    }
+
+    protected function initCollection()
+    {
+        function getParam(int $length)
+        {
+            $params = [];
+            $paramsStr = isset($_GET['_url']) ? $_GET['_url'] : '/';
+            $strParams = trim($paramsStr, '/');
+            if($strParams !== "")
+            {
+                $params = explode("/", $strParams);
+            }
+            return implode('/', array_slice($params, 0, $length));
+        }
+
+        if (($prefix = getParam(1))
+            && is_file(__BASE__.'/app/collections/'.$prefix.'.php'))
+        {
+            $this->collection = require_once __BASE__.'/app/collections/'.$prefix.'.php';
+        }
+    }
+
+    protected function initDatabase()
+    {
+        if(true === isset($this->config['databases']))
+        {
+            Peanut\Db\Driver::setConnectInfo($this->config['databases']);
+        }
+    }
+
+    public function run()
+    {
+        $this->initConfig();
+        $this->initSession();
+        $this->initCollection();
+        $this->initDatabase();
+
+        $app = new Phalcon\Mvc\Micro();
+
+        $app->setDI($this->di);
+        if($this->collection)
+        {
+            $app->mount($this->collection);
+        }
+
+        return $app;
     }
 }
 
-return $app;
+$bootstrap = new Bootstrap(new \Phalcon\DI\FactoryDefault);
+return $app = $bootstrap->run();

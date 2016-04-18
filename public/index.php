@@ -1,7 +1,9 @@
 <?php
 
 try {
-    $app = include_once __DIR__.'/../app/helpers/bootstrap.php';
+    define('__BASE__', dirname(dirname(__FILE__)));
+
+    $app = require_once __BASE__.'/app/helpers/bootstrap.php';
 
     $app->before(
         function () use ($app) {
@@ -31,6 +33,7 @@ try {
 } catch (\Exception $e) {
     echo '<pre>';
     print_r($e->getMessage());
+    echo "\n\n";
     print_r($e->getTraceAsString());
     echo '</pre>';
 }//end try
