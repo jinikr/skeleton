@@ -22,18 +22,19 @@ class Bootstrap
         if(is_file(__BASE__.'/app/config/environment.php'))
         {
             $environments = require_once __BASE__.'/app/config/environment.php';
-            if(true === is_array($environments))
+            if(true === isset($environments['domains']) && true === is_array($environments['domains']))
             {
-                foreach ($environments as $environment => $domain)
+                foreach ($environments['domains'] as $environment => $domain)
                 {
                     if (true === in_array(getenv('HTTP_HOST'), $domain)
                         && is_file(__BASE__.'/app/config/environment/'.$environment.'.php'))
                     {
-                        $this->config = require_once __BASE__.'/app/config/environment/'.$environment.'.php';
+                        $environment = require_once __BASE__.'/app/config/environment/'.$environment.'.php';
                         break;
                     }
                 }
             }
+            $this->config = array_merge($environments, $environment);
         }
 
         if(!$this->config)
@@ -44,7 +45,8 @@ class Bootstrap
 
     protected function initSession()
     {
-        $this->di['session'] = function () {
+        $this->di['session'] = function ()
+        {
             $session = new Phalcon\Session\Adapter\Files();
             $session->start();
             return $session;
