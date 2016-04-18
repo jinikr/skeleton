@@ -4,7 +4,7 @@ define('LANG', 'ko');
 date_default_timezone_set('ROK');
 ini_set('display_errors', 'On');
 ini_set('display_startup_errors', 'On');
-ini_set('error_reporting', E_ALL);
+ini_set('error_reporting', E_ALL | E_STRICT);
 ini_set('log_errors', 'On');
 ini_set('track_errors', 'On');
 ini_set('session.cookie_lifetime', '0');

@@ -1,9 +1,9 @@
 <?php
 
 {
-    require_once __BASE__."/vendor/autoload.php";
-    //require_once __BASE__.'/app/helpers/debug.php';
-    require_once __BASE__.'/app/helpers/function.php';
+    include_once __BASE__."/vendor/autoload.php";
+    include_once __BASE__.'/app/helpers/debug.php';
+    include_once __BASE__.'/app/helpers/function.php';
 }
 
 class Bootstrap
@@ -11,35 +11,48 @@ class Bootstrap
     private $di;
     private $collection;
     private $config = [];
+    private $environment;
 
-    public function __construct($di)
+    public function __construct(\Phalcon\DI\FactoryDefault $di)
     {
         $this->di = $di;
     }
 
     protected function initConfig()
     {
-        if(is_file(__BASE__.'/app/config/environment.php'))
+        try
         {
-            $environments = require_once __BASE__.'/app/config/environment.php';
-            if(true === isset($environments['domains']) && true === is_array($environments['domains']))
+            if(true === is_file(__BASE__.'/app/config/environment.php'))
             {
-                foreach ($environments['domains'] as $environment => $domain)
+                $environmentsConfig = include_once __BASE__.'/app/config/environment.php';
+                if(true === is_array($environmentsConfig)
+                    && true === isset($environmentsConfig['domains'])
+                    && true === is_array($environmentsConfig['domains']))
                 {
-                    if (true === in_array(getenv('HTTP_HOST'), $domain)
-                        && is_file(__BASE__.'/app/config/environment/'.$environment.'.php'))
+                    foreach ($environmentsConfig['domains'] as $environment => $domain)
                     {
-                        $environment = require_once __BASE__.'/app/config/environment/'.$environment.'.php';
-                        break;
+                        if (true === in_array(getenv('HTTP_HOST'), $domain)
+                            && is_file(__BASE__.'/app/config/environment/'.$environment.'.php'))
+                        {
+                            $environmentConfig = include_once __BASE__.'/app/config/environment/'.$environment.'.php';
+                            $this->environment = $environment;
+                            break;
+                        }
+                    }
+                    if(true === isset($environmentConfig))
+                    {
+                        $this->config = array_merge($environmentsConfig, $environmentConfig);
                     }
                 }
             }
-            $this->config = array_merge($environments, $environment);
+            if(!$this->config)
+            {
+                throw new \Exception(__BASE__.'/app/config/environment.php 을 확인하세요.');
+            }
         }
-
-        if(!$this->config)
+        catch(\Exception $e)
         {
-            throw new \Exception(__BASE__.'/app/config/environment.php 을 확인하세요.');
+            throw new \Exception($e);
         }
     }
 
@@ -70,7 +83,7 @@ class Bootstrap
         if (($prefix = getParam(1))
             && is_file(__BASE__.'/app/collections/'.$prefix.'.php'))
         {
-            $this->collection = require_once __BASE__.'/app/collections/'.$prefix.'.php';
+            $this->collection = include_once __BASE__.'/app/collections/'.$prefix.'.php';
         }
     }
 
@@ -82,24 +95,25 @@ class Bootstrap
         }
     }
 
-    public function run()
+    public function run(\Phalcon\Mvc\Micro $app)
     {
         $this->initConfig();
         $this->initSession();
         $this->initCollection();
         $this->initDatabase();
 
-        $app = new Phalcon\Mvc\Micro();
-
         $app->setDI($this->di);
         if($this->collection)
         {
             $app->mount($this->collection);
         }
-
         return $app;
+    }
+
+    public function __invoke(\Phalcon\Mvc\Micro $app)
+    {
+        return $this->run($app);
     }
 }
 
-$bootstrap = new Bootstrap(new \Phalcon\DI\FactoryDefault);
-return $app = $bootstrap->run();
+return (new Bootstrap(new \Phalcon\DI\FactoryDefault))(new \Phalcon\Mvc\Micro);

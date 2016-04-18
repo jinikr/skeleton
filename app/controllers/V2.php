@@ -39,7 +39,7 @@ class V2 extends \Phalcon\Mvc\Controller
         $pointSeq = Db::name('master')->transaction(
             function() use  ($response)
             {
-                $userSeq = UserModel::setUser('test2'.time());
+                $userSeq = UserModel::setUser('test2'.microtime());
                 return $pointSeq = UserModel::setUserPoint($userSeq, 100);
             }
         );

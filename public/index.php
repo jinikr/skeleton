@@ -3,7 +3,7 @@
 try {
     define('__BASE__', dirname(dirname(__FILE__)));
 
-    $app = require_once __BASE__.'/app/helpers/bootstrap.php';
+    $app = include_once __BASE__.'/app/helpers/bootstrap.php';
 
     $app->before(
         function () use ($app) {
