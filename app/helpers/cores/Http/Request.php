@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Helpers\Cores\Http;;
+namespace App\Helpers\Cores\Http;
 
 class Request extends \Phalcon\Http\Request
 {
