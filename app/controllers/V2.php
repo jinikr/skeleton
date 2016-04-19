@@ -7,10 +7,21 @@ use App\Models\User as UserModel;
 
 class V2 extends \Phalcon\Mvc\Controller
 {
+    public $tmp = 0;
+    public function onConstruct()
+    {
+        $request  = $this->request;
+        $request->setQuery('a', 'ddd');
+        pr($request->getParam('name'));
+        //$request->setQuery('a', 'ddd');
+        echo 'before<hr />';
+        $this->tmp = 1;
+    }
 
     /**
-     * @brief index
-     * @return http response object
+     * index
+     *
+     * @return $response
      */
     public function index()
     {
@@ -24,17 +35,20 @@ class V2 extends \Phalcon\Mvc\Controller
     }
 
     /**
-     * @brief getInfo
+     * getInfo
+     *
      * @param string $name
      * @param string $ext
-     * @return http response object
+     * @return $response
      */
     public function getInfo($name, $ext)
     {
 
         $response = $this->response;
         $request  = $this->request;
-
+        pr($request->getQuery('a'));
+        pr($request->getParam('name'));
+        pr($this->tmp);
         UserModel::getUserList();
         $pointSeq = Db::name('master')->transaction(
             function() use  ($response)

@@ -2,7 +2,10 @@
 
 namespace App\Middlewares;
 
-class Auth
+use Phalcon\Mvc\Micro as Micro;
+use Phalcon\Mvc\Micro\MiddlewareInterface;
+
+class Auth //implements MiddlewareInterface
 {
 
     public static function call($app)

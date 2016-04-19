@@ -1,10 +1,6 @@
 <?php
 
-{
-    include_once __BASE__."/vendor/autoload.php";
-    include_once __BASE__.'/app/helpers/debug.php';
-    include_once __BASE__.'/app/helpers/function.php';
-}
+namespace App\Helpers\Cores;
 
 class Bootstrap
 {
@@ -18,7 +14,7 @@ class Bootstrap
         $this->di = $di;
     }
 
-    protected function initConfig()
+    private function initConfig()
     {
         try
         {
@@ -39,7 +35,8 @@ class Bootstrap
                             break;
                         }
                     }
-                    if(true === isset($environmentConfig))
+                    if(true === isset($environmentConfig)
+                        && true === is_array($environmentConfig))
                     {
                         $this->config = array_merge($environmentsConfig, $environmentConfig);
                     }
@@ -56,17 +53,17 @@ class Bootstrap
         }
     }
 
-    protected function initSession()
+    private function initSession()
     {
         $this->di['session'] = function ()
         {
-            $session = new Phalcon\Session\Adapter\Files();
+            $session = new \Phalcon\Session\Adapter\Files();
             $session->start();
             return $session;
         };
     }
 
-    protected function initCollection()
+    private function initCollection()
     {
         function getParam(int $length)
         {
@@ -81,18 +78,27 @@ class Bootstrap
         }
 
         if (($prefix = getParam(1))
-            && is_file(__BASE__.'/app/collections/'.$prefix.'.php'))
+            && is_file(__BASE__.'/app/config/collections/'.$prefix.'.php'))
         {
-            $this->collection = include_once __BASE__.'/app/collections/'.$prefix.'.php';
+            $this->collection = include_once __BASE__.'/app/config/collections/'.$prefix.'.php';
         }
     }
 
-    protected function initDatabase()
+    private function initDatabase()
     {
         if(true === isset($this->config['databases']))
         {
-            Peanut\Db\Driver::setConnectInfo($this->config['databases']);
+            \Peanut\Db\Driver::setConnectInfo($this->config['databases']);
         }
+    }
+
+
+    private function initRequest()
+    {
+        $this->di['request'] = function ()
+        {
+            return new \App\Helpers\Cores\Http\Request();
+        };
     }
 
     public function run(\Phalcon\Mvc\Micro $app)
@@ -101,8 +107,10 @@ class Bootstrap
         $this->initSession();
         $this->initCollection();
         $this->initDatabase();
+        $this->initRequest();
 
         $app->setDI($this->di);
+
         if($this->collection)
         {
             $app->mount($this->collection);
@@ -115,5 +123,3 @@ class Bootstrap
         return $this->run($app);
     }
 }
-
-return (new Bootstrap(new \Phalcon\DI\FactoryDefault))(new \Phalcon\Mvc\Micro);
