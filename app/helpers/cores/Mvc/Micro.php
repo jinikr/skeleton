@@ -15,7 +15,6 @@ class Micro extends \Phalcon\Mvc\Micro
      */
     public function handle($uri = null)
     {
-
         foreach(Store::getInstance()->getRoutes() as $key => $value)
         {
              parent::{$value['method']}($value['prefix'].$value['pattern'], $value['handler']);
@@ -306,6 +305,7 @@ class Store
     public $param=[];
     public $prefix;
     public $segments;
+    public $method;
 
     public static function getInstance()
     {
@@ -314,7 +314,7 @@ class Store
             static::$instance = new self();
             static::$instance->segments = explode('/', $_GET['_url']);
             static::$instance->prefix = static::$instance->segments[1];
-
+            static::$instance->method = strtolower($_SERVER['REQUEST_METHOD']);
             static::$instance->seg = [];
             $tmp = '';
             foreach(static::$instance->segments as $key => $value)
@@ -332,14 +332,17 @@ class Store
         $prefix = trim($prefix,'/');
         $routePattern = trim($routePattern,'/');
 
-        if(true === empty($prefix) || 0 === strpos($prefix, $this->prefix))
+        if($method === static::$instance->method)
         {
-            $this->routes[] = [
-                'method' => $method,
-                'prefix' => ($prefix ? '/'.$prefix : ''),
-                'pattern' => ($routePattern ? '/'.$routePattern : ''),
-                'handler' => $handler
-            ];
+            if(true === empty($prefix) || (false === empty($this->prefix) && 0 === strpos($prefix, $this->prefix)))
+            {
+                $this->routes[] = [
+                    'method' => $method,
+                    'prefix' => ($prefix ? '/'.$prefix : ''),
+                    'pattern' => ($routePattern ? '/'.$routePattern : ''),
+                    'handler' => $handler
+                ];
+            }
         }
     }
 
