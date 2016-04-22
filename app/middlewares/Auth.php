@@ -10,10 +10,13 @@ class Auth //implements MiddlewareInterface
 
     public static function call($app)
     {
-        try {
+        try
+        {
             //throw new \Exception('error auth');
             return true;
-        } catch (\Exception $e) {
+        }
+        catch (\Exception $e)
+        {
             $app->response
                 ->setStatusCode(403, 'Forbidden')
                 ->setContentType('application/json')
