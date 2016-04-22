@@ -283,6 +283,18 @@ class Request extends \Phalcon\Http\Request
      */
     public function getParam($key)
     {
-        return $this->getDI()->get('router')->getParams()[$key];
+        $params = $this->getDI()->get('router')->getParams();
+        return true === isset($params[$key]) ? $params[$key] : '';
     }
+
+    /**
+     * Gets params
+     *
+     * @return array
+     */
+    public function getParams()
+    {
+        return $this->getDI()->get('router')->getParams();
+    }
+
 }
