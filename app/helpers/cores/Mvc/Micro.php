@@ -5,9 +5,6 @@ namespace App\Helpers\Cores\Mvc;
 class Micro extends \Phalcon\Mvc\Micro
 {
 
-    public $__before;
-    public $__after;
-    public $__param;
     public $prefix;
 
     /**
@@ -30,7 +27,8 @@ class Micro extends \Phalcon\Mvc\Micro
             throw new \Exception("A dependency injection container is required to access required micro services");
         }
 
-        try {
+        try
+        {
 
             $returnedValue = null;
             $router = $dependencyInjector->getShared("router");
