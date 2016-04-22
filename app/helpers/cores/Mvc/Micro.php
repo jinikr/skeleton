@@ -7,6 +7,20 @@ class Micro extends \Phalcon\Mvc\Micro
 
     public $prefix;
 
+    private function callHandler($handlers, $args = [])
+    {
+        if(true === is_callable($handlers))
+        {
+            $status = call_user_func_array($handlers, $args);
+        }
+        else if(true === is_string($handlers) && false !== strpos($handlers, '->'))
+        {
+            $tmp = explode('->', $handlers);
+            $class = new $tmp[0];
+            $status = call_user_func_array([$class, $tmp[1]], $args);
+        }
+        return $status;
+    }
     /**
      * Handle the whole request
      *
@@ -28,7 +42,6 @@ class Micro extends \Phalcon\Mvc\Micro
 
         try
         {
-
             $returnedValue = null;
             $router = $dependencyInjector->getShared("router");
             $router->handle($uri);
@@ -36,9 +49,7 @@ class Micro extends \Phalcon\Mvc\Micro
 
             if (true === is_object($matchedRoute))
             {
-
                 $handler = $this->_handlers[$matchedRoute->getRouteId()];
-
                 if (!$handler)
                 {
                     throw new \Exception("Matched route doesn't have an associated handler");
@@ -48,39 +59,21 @@ class Micro extends \Phalcon\Mvc\Micro
                  * Updating active handler
                  */
                 $this->_activeHandler = $handler;
+
                 $params = $router->getParams();
 
-                $middleHandler = $handler;
-
-
                 $paramHandlers = Store::getInstance()->get('param');
-
                 if (true === is_array($paramHandlers))
                 {
                     foreach($paramHandlers as $key => $param)
                     {
                         if(true === isset($params[$key]))
                         {
-                            $middleHandler[1] = $param;
-                            if(true === is_callable($param))
-                            {
-                                $status = $param($params[$key]);
-                            }
-                            else if(true === is_string($param) && false !== strpos($param, '->'))
-                            {
-                                $tmp = explode('->', $param);
-                                $class = new $tmp[0];
-                                $status = call_user_func_array([$class, $tmp[1]]);
-                            }
-                            else
-                            {
-                                $status = call_user_func_array($param, [$params[$key]]);
-                            }
+                            $status = $this->callHandler($param, [$params[$key]]);
                             if(false === $status)
                             {
                                 return false;
                             }
-
                         }
                     }
                 }
@@ -90,20 +83,7 @@ class Micro extends \Phalcon\Mvc\Micro
                 {
                     foreach($beforeHandlers as $before)
                     {
-                        if(true === is_callable($before))
-                        {
-                            $status = $before();
-                        }
-                        else if(true === is_string($before) && false !== strpos($before, '->'))
-                        {
-                            $tmp = explode('->', $before);
-                            $class = new $tmp[0];
-                            $status = call_user_func_array([$class, $tmp[1]], []);
-                        }
-                        else
-                        {
-                            $status = call_user_func_array($before, []);
-                        }
+                        $status = $this->callHandler($before);
                         if(false === $status)
                         {
                             return false;
@@ -111,50 +91,23 @@ class Micro extends \Phalcon\Mvc\Micro
                     }
                 }
 
-                if(true === is_callable($handler))
-                {
-                    $returnedValue = $handler();
-                }
-                else if(true === is_string($handler) && false !== strpos($handler, '->'))
-                {
-                    $tmp = explode('->', $handler);
-                    $class = new $tmp[0];
-                    $returnedValue = call_user_func_array([$class, $tmp[1]], $params);
-                }
-                else
-                {
-                    $returnedValue = call_user_func_array($handler, $params);
-                }
+                $returnedValue = $this->callHandler($handler, $params);
 
                 $afterHandlers = Store::getInstance()->get('after');
                 if (true === is_array($afterHandlers))
                 {
                     foreach($afterHandlers as $after)
                     {
-                        if(true === is_callable($after))
-                        {
-                            $status = $after();
-                        }
-                        else if(true === is_string($after) && false !== strpos($after, '->'))
-                        {
-                            $tmp = explode('->', $after);
-                            $class = new $tmp[0];
-                            $status = call_user_func_array([$class, $tmp[1]], []);
-                        }
-                        else {
-                            $status = call_user_func_array($after, []);
-                        }
+                        $status = $this->callHandler($after);
                         if(false === $status)
                         {
                             return false;
                         }
                     }
                 }
-
             }
             else
             {
-
                 /**
                  * Check if a notfoundhandler is defined and it's callable
                  */
@@ -174,7 +127,6 @@ class Micro extends \Phalcon\Mvc\Micro
         }
         catch (\Exception $e)
         {
-
             /**
              * Check if an errorhandler is defined and it's callable
              */
@@ -203,7 +155,6 @@ class Micro extends \Phalcon\Mvc\Micro
                         throw $e;
                     }
                 }
-
             } else {
                 if (false !== $returnedValue) {
                     throw $e;
