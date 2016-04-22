@@ -10,37 +10,8 @@ try
         include_once __BASE__.'/app/helpers/function.php';
     }
 
-    $app = (new \App\Helpers\Cores\Bootstrap(new \Phalcon\DI\FactoryDefault))(new \Phalcon\Mvc\Micro);
-
-    $app->before(
-        function () use ($app)
-        {
-            return App\Middlewares\Auth::call($app);
-        }
-    );
-    $app->get(
-        '/',
-        function () use ($app)
-        {
-            echo '/';
-        }
-    );
-    $app->notFound(
-        function () use ($app)
-        {
-            $app->response->setStatusCode(404, 'Not Found');
-            $app->response->setContent('404 Page or File Not Found');
-            return $app->response;
-        }
-    );
-    $app->after(
-        function () use ($app)
-        {
-            $content = $app->response->getContent();
-        }
-    );
-
-    $app->handle();
+    $app = (new \App\Helpers\Cores\Bootstrap(new \Phalcon\DI\FactoryDefault))(new \App\Helpers\Cores\Mvc\Micro)
+    ->handle();
 }
 catch (\Exception $e)
 {
