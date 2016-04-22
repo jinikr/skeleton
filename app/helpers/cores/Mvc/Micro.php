@@ -7,20 +7,32 @@ class Micro extends \Phalcon\Mvc\Micro
 
     public $prefix;
 
-    private function callHandler($handlers, $args = [])
+    private function callHandler($name, $handlers, $args = [])
     {
         if(true === is_callable($handlers))
         {
             $status = call_user_func_array($handlers, $args);
         }
-        else if(true === is_string($handlers) && false !== strpos($handlers, '->'))
+        else if(true === is_string($handlers))
         {
-            $tmp = explode('->', $handlers);
-            $class = new $tmp[0];
-            $status = call_user_func_array([$class, $tmp[1]], $args);
+            if(false !== strpos($handlers, '->'))
+            {
+                $tmp = explode('->', $handlers);
+                $class = new $tmp[0];
+                $status = call_user_func_array([$class, $tmp[1]], $args);
+            }
+            else
+            {
+                throw new \Exception($handlers." handler is not callable");
+            }
+        }
+        else
+        {
+            throw new \Exception($name." handler is not callable");
         }
         return $status;
     }
+
     /**
      * Handle the whole request
      *
@@ -69,7 +81,7 @@ class Micro extends \Phalcon\Mvc\Micro
                     {
                         if(true === isset($params[$key]))
                         {
-                            $status = $this->callHandler($param, [$params[$key]]);
+                            $status = $this->callHandler('param', $param, [$params[$key]]);
                             if(false === $status)
                             {
                                 return false;
@@ -83,7 +95,7 @@ class Micro extends \Phalcon\Mvc\Micro
                 {
                     foreach($beforeHandlers as $before)
                     {
-                        $status = $this->callHandler($before);
+                        $status = $this->callHandler('before', $before);
                         if(false === $status)
                         {
                             return false;
@@ -91,14 +103,14 @@ class Micro extends \Phalcon\Mvc\Micro
                     }
                 }
 
-                $returnedValue = $this->callHandler($handler, $params);
+                $returnedValue = $this->callHandler('', $handler, $params);
 
                 $afterHandlers = Store::getInstance()->get('after');
                 if (true === is_array($afterHandlers))
                 {
                     foreach($afterHandlers as $after)
                     {
-                        $status = $this->callHandler($after);
+                        $status = $this->callHandler('after', $after);
                         if(false === $status)
                         {
                             return false;
@@ -111,16 +123,7 @@ class Micro extends \Phalcon\Mvc\Micro
                 /**
                  * Check if a notfoundhandler is defined and it's callable
                  */
-                $notFoundHandler = $this->_notFoundHandler;
-                if (false === is_callable($notFoundHandler))
-                {
-                    throw new \Exception("Not-Found handler is not callable or is not defined");
-                }
-
-                /**
-                 * Call the Not-Found handler
-                 */
-                $returnedValue = call_user_func($notFoundHandler);
+                $returnedValue = $this->callHandler('notFound', $this->_notFoundHandler);
             }
 
             $this->_returnedValue = $returnedValue;
@@ -130,33 +133,29 @@ class Micro extends \Phalcon\Mvc\Micro
             /**
              * Check if an errorhandler is defined and it's callable
              */
-            $errorHandler = $this->_errorHandler;
-            if ($errorHandler)
+            if ($this->_errorHandler)
             {
+                $returnedValue = $this->callHandler('error', $this->_errorHandler, [$e]);
 
-                if (false === is_callable($errorHandler))
-                {
-                    throw new \Exception("Error handler is not callable");
-                }
-
-                /**
-                 * Call the Error handler
-                 */
-                $returnedValue = call_user_func_array($errorHandler, [$e]);
                 if (true === is_object($returnedValue))
                 {
                     if (!($returnedValue instanceof \Phalcon\Http\ResponseInterface))
                     {
                         throw $e;
                     }
-                } else {
+                }
+                else
+                {
                     if (false !== $returnedValue)
                     {
                         throw $e;
                     }
                 }
-            } else {
-                if (false !== $returnedValue) {
+            }
+            else
+            {
+                if (false !== $returnedValue)
+                {
                     throw $e;
                 }
             }
