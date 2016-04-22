@@ -16,7 +16,7 @@ class user
 
     public static function getUserList()
     {
-        return Db::name('slave')->gets("select * from user");
+        return Db::name('slave')->gets("select * from user limit 10");
     }
 
     public static function setUser($name)
