@@ -2,7 +2,7 @@
 
 return call_user_func(function() {
 
-    $collection = new Phalcon\Mvc\Micro\Collection();
+    $collection = new App\Helpers\Cores\Mvc\Micro\Collection();
 
     $collection->setPrefix('/v1');
     $collection->setHandler('\App\Controllers\V1', true);
