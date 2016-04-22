@@ -7,17 +7,38 @@ use App\Models\User as UserModel;
 
 class V2 extends \Phalcon\Mvc\Controller
 {
+
     public $tmp = 0;
     public function onConstruct()
     {
-        $request  = $this->request;
-        $request->setQuery('a', 'ddd');
-        pr($request->getParam('name'));
-        //$request->setQuery('a', 'ddd');
-        echo 'before<hr />';
-        $this->tmp = 1;
+
     }
 
+    public function before()
+    {
+        echo '<hr />';
+        echo 'before';
+        echo '<hr />';
+    }
+
+    public function checkParam()
+    {
+        echo '<hr />';
+        echo 'before';
+        echo '<hr />';
+    }
+
+    public function after()
+    {
+        echo '<hr />';
+        echo 'after';
+        echo '<hr />';
+    }
+
+    public function checkname($name)
+    {
+        $this->response->setContent('checkname : '. $name. ' ');
+    }
     /**
      * index
      *
@@ -30,7 +51,7 @@ class V2 extends \Phalcon\Mvc\Controller
 
         $name = 'index';
         $response->setContent('v2 index');
-        phpinfo();
+        //phpinfo();
         return $response;
     }
 
@@ -43,7 +64,6 @@ class V2 extends \Phalcon\Mvc\Controller
      */
     public function getInfo($name, $ext)
     {
-
         $response = $this->response;
         $request  = $this->request;
         pr($request->getQuery('a'));
@@ -57,7 +77,7 @@ class V2 extends \Phalcon\Mvc\Controller
                 return $pointSeq = UserModel::setUserPoint($userSeq, 100);
             }
         );
-        $response->setContent('v2 getInfo '.$name.$pointSeq.'.'.$ext);
+        $response->setContent($response->getContent().'v2 getInfo '.$name.$pointSeq.'.'.$ext);
 
         return $response;
     }
