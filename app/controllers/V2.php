@@ -7,7 +7,7 @@ use App\Models\User as UserModel;
 
 class V2 extends \Phalcon\Mvc\Controller
 {
-
+    public $a = 0;
     public $tmp = 0;
     public function onConstruct()
     {
@@ -16,6 +16,7 @@ class V2 extends \Phalcon\Mvc\Controller
 
     public function before()
     {
+        $this->a++;
         echo '<hr />';
         echo 'before';
         echo '<hr />';
@@ -23,13 +24,17 @@ class V2 extends \Phalcon\Mvc\Controller
 
     public function checkParam()
     {
+        $this->a++;
+
         echo '<hr />';
-        echo 'before';
+        echo 'checkParam';
         echo '<hr />';
     }
 
     public function after()
     {
+
+        $this->a++;
         echo '<hr />';
         echo 'after';
         echo '<hr />';
@@ -37,6 +42,10 @@ class V2 extends \Phalcon\Mvc\Controller
 
     public function checkname($name)
     {
+        $this->a++;
+        echo '<hr />';
+        echo 'checkname';
+        echo '<hr />';
         $this->response->setContent('checkname : '. $name. ' ');
     }
     /**
@@ -66,6 +75,7 @@ class V2 extends \Phalcon\Mvc\Controller
     {
         $response = $this->response;
         $request  = $this->request;
+        pr('aaaaaaaaaaa : '.$this->a);
         pr($request->getQuery('a'));
         pr($request->getParam('name'));
         pr($this->tmp);
