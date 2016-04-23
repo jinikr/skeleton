@@ -9,13 +9,13 @@ class Micro extends \Phalcon\Mvc\Micro
 
     private function callHandler($name, $handlers, $args = [])
     {
-        if(true === is_callable($handlers))
+        if (true === is_callable($handlers))
         {
             $status = call_user_func_array($handlers, $args);
         }
-        else if(true === is_string($handlers))
+        else if (true === is_string($handlers))
         {
-            if(false !== strpos($handlers, '->'))
+            if (false !== strpos($handlers, '->'))
             {
                 $tmp = explode('->', $handlers);
                 $class = Store::getInstance()->load($tmp[0]);
@@ -41,7 +41,7 @@ class Micro extends \Phalcon\Mvc\Micro
      */
     public function handle($uri = null)
     {
-        foreach(Store::getInstance()->getRoutes() as $key => $value)
+        foreach (Store::getInstance()->getRoutes() as $key => $value)
         {
              parent::{$value['method']}($value['prefix'].$value['pattern'], $value['handler']);
         }
@@ -77,12 +77,12 @@ class Micro extends \Phalcon\Mvc\Micro
                 $paramHandlers = Store::getInstance()->get('param');
                 if (true === is_array($paramHandlers))
                 {
-                    foreach($paramHandlers as $key => $param)
+                    foreach ($paramHandlers as $key => $param)
                     {
-                        if(true === isset($params[$param[0]]))
+                        if (true === isset($params[$param[0]]))
                         {
                             $status = $this->callHandler('param', $param[1], [$params[$param[0]]]);
-                            if(false === $status)
+                            if (false === $status)
                             {
                                 return false;
                             }
@@ -93,25 +93,25 @@ class Micro extends \Phalcon\Mvc\Micro
                 $beforeHandlers = Store::getInstance()->get('before');
                 if (true === is_array($beforeHandlers))
                 {
-                    foreach($beforeHandlers as $before)
+                    foreach ($beforeHandlers as $before)
                     {
                         $status = $this->callHandler('before', $before);
-                        if(false === $status)
+                        if (false === $status)
                         {
                             return false;
                         }
                     }
                 }
 
-                $returnedValue = $this->callHandler('', $handler, $params);
+                $returnedValue = $this->callHandler('class', $handler, $params);
 
                 $afterHandlers = Store::getInstance()->get('after');
                 if (true === is_array($afterHandlers))
                 {
-                    foreach($afterHandlers as $after)
+                    foreach ($afterHandlers as $after)
                     {
                         $status = $this->callHandler('after', $after);
-                        if(false === $status)
+                        if (false === $status)
                         {
                             return false;
                         }
@@ -181,16 +181,19 @@ class Micro extends \Phalcon\Mvc\Micro
     public function param($key, $methodName)
     {
         Store::getInstance()->set('param', $this->prefix, [$key, $methodName]);
+        return $this;
     }
 
     public function before($methodName)
     {
         Store::getInstance()->set('before', $this->prefix, $methodName);
+        return $this;
     }
 
     public function after($methodName)
     {
         Store::getInstance()->set('after', $this->prefix, $methodName);
+        return $this;
     }
 
     public function group($prefix, \Closure $callback)
@@ -208,42 +211,51 @@ class Micro extends \Phalcon\Mvc\Micro
     public function map($routePattern, $handler)
     {
         Store::getInstance()->setRoute('map', $this->prefix, $routePattern, $handler);
+        return $this;
     }
 
     public function get($routePattern, $handler)
     {
         Store::getInstance()->setRoute('get', $this->prefix, $routePattern, $handler);
+        return $this;
     }
 
     public function post($routePattern, $handler)
     {
         Store::getInstance()->setRoute('post', $this->prefix, $routePattern, $handler);
+        return $this;
     }
 
     public function put($routePattern, $handler)
     {
         Store::getInstance()->setRoute('put', $this->prefix, $routePattern, $handler);
+        return $this;
     }
 
     public function patch($routePattern, $handler)
     {
         Store::getInstance()->setRoute('patch', $this->prefix, $routePattern, $handler);
+        return $this;
     }
 
     public function head($routePattern, $handler)
     {
         Store::getInstance()->setRoute('head', $this->prefix, $routePattern, $handler);
+        return $this;
     }
 
     public function delete($routePattern, $handler)
     {
         Store::getInstance()->setRoute('delete', $this->prefix, $routePattern, $handler);
+        return $this;
     }
 
     public function options($routePattern, $handler)
     {
         Store::getInstance()->setRoute('options', $this->prefix, $routePattern, $handler);
+        return $this;
     }
+
 }
 
 class Store
@@ -260,7 +272,7 @@ class Store
 
     public static function getInstance()
     {
-        if(!static::$instance)
+        if (!static::$instance)
         {
             static::$instance = new self();
             static::$instance->segments = explode('/', $_GET['_url']);
@@ -268,7 +280,7 @@ class Store
             static::$instance->method = strtolower($_SERVER['REQUEST_METHOD']);
             static::$instance->seg = [];
             $tmp = '';
-            foreach(static::$instance->segments as $key => $value)
+            foreach (static::$instance->segments as $key => $value)
             {
                 $tmp .= ($value ? '/'.$value : '');
                 static::$instance->seg[] = ($tmp ?: '/');
@@ -283,9 +295,10 @@ class Store
         $prefix = trim($prefix,'/');
         $routePattern = trim($routePattern,'/');
 
-        if($method === static::$instance->method)
+        if ($method === static::$instance->method)
         {
-            if(true === empty($prefix) || (false === empty($this->prefix) && 0 === strpos($prefix, $this->prefix)))
+            if (true === empty($prefix)
+                || (false === empty($this->prefix) && 0 === strpos($prefix, $this->prefix)))
             {
                 $this->routes[] = [
                     'method' => $method,
@@ -301,7 +314,7 @@ class Store
     {
         $prefix = trim($prefix,'/');
 
-        if(true === in_array('/'.$prefix, $this->seg))
+        if (true === in_array('/'.$prefix, $this->seg))
         {
             $this->{$method}[($prefix ? '/'.$prefix : '')] = $handler;
         }
@@ -319,7 +332,7 @@ class Store
 
     public function load($className)
     {
-        if(false === isset($this->class[$className]))
+        if (false === isset($this->class[$className]))
         {
             $this->class[$className] = new $className;
         }
