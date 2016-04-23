@@ -18,17 +18,17 @@ class Micro extends \Phalcon\Mvc\Micro
             if(false !== strpos($handlers, '->'))
             {
                 $tmp = explode('->', $handlers);
-                $class = new $tmp[0];
+                $class = Store::getInstance()->load($tmp[0]);
                 $status = call_user_func_array([$class, $tmp[1]], $args);
             }
             else
             {
-                throw new \Exception($handlers." handler is not callable");
+                throw new \Exception($name.':'.$handlers.' handler is not callable');
             }
         }
         else
         {
-            throw new \Exception($name." handler is not callable");
+            throw new \Exception($name.' handler is not callable');
         }
         return $status;
     }
@@ -79,9 +79,9 @@ class Micro extends \Phalcon\Mvc\Micro
                 {
                     foreach($paramHandlers as $key => $param)
                     {
-                        if(true === isset($params[$key]))
+                        if(true === isset($params[$param[0]]))
                         {
-                            $status = $this->callHandler('param', $param, [$params[$key]]);
+                            $status = $this->callHandler('param', $param[1], [$params[$param[0]]]);
                             if(false === $status)
                             {
                                 return false;
@@ -180,7 +180,7 @@ class Micro extends \Phalcon\Mvc\Micro
 
     public function param($key, $methodName)
     {
-        Store::getInstance()->set('param', $this->prefix, $methodName);
+        Store::getInstance()->set('param', $this->prefix, [$key, $methodName]);
     }
 
     public function before($methodName)
@@ -256,6 +256,7 @@ class Store
     public $prefix;
     public $segments;
     public $method;
+    public $class;
 
     public static function getInstance()
     {
@@ -315,4 +316,14 @@ class Store
     {
         return $this->routes;
     }
+
+    public function load($className)
+    {
+        if(false === isset($this->class[$className]))
+        {
+            $this->class[$className] = new $className;
+        }
+        return $this->class[$className];
+    }
+
 }
