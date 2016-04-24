@@ -23,7 +23,7 @@ class Micro extends \Phalcon\Mvc\Micro
             }
             else
             {
-                throw new \Exception($name.':'.$handlers.' handler is not callable');
+                throw new \Exception($name.' '.$handlers.' handler is not callable');
             }
         }
         else
@@ -144,13 +144,6 @@ class Micro extends \Phalcon\Mvc\Micro
                         throw $e;
                     }
                 }
-                else
-                {
-                    if (false !== $returnedValue)
-                    {
-                        throw $e;
-                    }
-                }
             }
             else
             {
@@ -178,6 +171,18 @@ class Micro extends \Phalcon\Mvc\Micro
         return $returnedValue;
     }
 
+    public function group($prefix, \Closure $callback)
+    {
+
+        $scope = clone $this;
+        $scope->prefix .= '/'.trim($prefix, '/');
+
+        $callback = $callback->bindTo($scope);
+        $tmp = $callback();
+
+        return $this;
+    }
+
     public function param($key, $methodName)
     {
         Store::getInstance()->set('param', $this->prefix, [$key, $methodName]);
@@ -193,18 +198,6 @@ class Micro extends \Phalcon\Mvc\Micro
     public function after($methodName)
     {
         Store::getInstance()->set('after', $this->prefix, $methodName);
-        return $this;
-    }
-
-    public function group($prefix, \Closure $callback)
-    {
-
-        $scope = clone $this;
-        $scope->prefix .= '/'.trim($prefix, '/');
-
-        $callback = $callback->bindTo($scope);
-        $tmp = $callback();
-
         return $this;
     }
 
@@ -261,14 +254,14 @@ class Micro extends \Phalcon\Mvc\Micro
 class Store
 {
     private static $instance; //The single instance
-    public $routes=[];
-    public $before=[];
-    public $after=[];
-    public $param=[];
-    public $prefix;
-    public $segments;
-    public $method;
-    public $class;
+    private $routes=[];
+    private $before=[];
+    private $after=[];
+    private $param=[];
+    private $prefix;
+    private $segments;
+    private $method;
+    private $class;
 
     public static function getInstance()
     {
