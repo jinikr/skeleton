@@ -143,9 +143,6 @@ class Micro extends \Phalcon\Mvc\Micro
             }
         }
 
-        /**
-         * Check if the returned object is already a response
-         */
         if (true === is_object($returnedValue)
             && $returnedValue instanceof \Phalcon\Http\ResponseInterface)
         {
