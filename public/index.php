@@ -2,7 +2,7 @@
 
 use \App\Helpers\Cores\Bootstrap;
 use \Phalcon\DI\FactoryDefault as Di;
-use \App\Helpers\Cores\Mvc\Micro as Micro;
+use \App\Helpers\Cores\Mvc\Micro;
 
 try
 {
