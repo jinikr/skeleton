@@ -58,6 +58,7 @@ class Micro extends \Phalcon\Mvc\Micro
             $router = $dependencyInjector->getShared("router");
             $router->handle($uri);
             $matchedRoute = $router->getMatchedRoute();
+            $params = $router->getParams();
 
             if (true === is_object($matchedRoute))
             {
@@ -66,13 +67,7 @@ class Micro extends \Phalcon\Mvc\Micro
                 {
                     throw new \Exception("Matched route doesn't have an associated handler");
                 }
-
-                /**
-                 * Updating active handler
-                 */
                 $this->_activeHandler = $handler;
-
-                $params = $router->getParams();
 
                 $paramHandlers = Store::getInstance()->get('param');
                 if (true === is_array($paramHandlers))
