@@ -122,7 +122,6 @@ class Bootstrap
         $this->initRoute($app);
 
         $app->setDI($this->di);
-
         return $app;
     }
 
