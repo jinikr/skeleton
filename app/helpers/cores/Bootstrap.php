@@ -68,7 +68,7 @@ class Bootstrap
         function getParam(int $length)
         {
             $params = [];
-            $paramsStr = isset($_GET['_url']) ? $_GET['_url'] : '/';
+            $paramsStr = true === isset($_GET['_url']) ? $_GET['_url'] : '/';
             $strParams = trim($paramsStr, '/');
             if ($strParams !== "")
             {

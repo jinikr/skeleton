@@ -120,9 +120,6 @@ class Micro extends \Phalcon\Mvc\Micro
             }
             else
             {
-                /**
-                 * Check if a notfoundhandler is defined and it's callable
-                 */
                 $returnedValue = $this->callHandler('notFound', $this->_notFoundHandler);
             }
 
@@ -130,42 +127,29 @@ class Micro extends \Phalcon\Mvc\Micro
         }
         catch (\Exception $e)
         {
-            /**
-             * Check if an errorhandler is defined and it's callable
-             */
             if ($this->_errorHandler)
             {
                 $returnedValue = $this->callHandler('error', $this->_errorHandler, [$e]);
 
-                if (true === is_object($returnedValue))
-                {
-                    if (!($returnedValue instanceof \Phalcon\Http\ResponseInterface))
-                    {
-                        throw $e;
-                    }
-                }
-            }
-            else
-            {
-                if (false !== $returnedValue)
+                if (true === is_object($returnedValue)
+                    && !($returnedValue instanceof \Phalcon\Http\ResponseInterface))
                 {
                     throw $e;
                 }
+            }
+            else if (false !== $returnedValue)
+            {
+                throw $e;
             }
         }
 
         /**
          * Check if the returned object is already a response
          */
-        if (true === is_object($returnedValue))
+        if (true === is_object($returnedValue)
+            && $returnedValue instanceof \Phalcon\Http\ResponseInterface)
         {
-            if ($returnedValue instanceof \Phalcon\Http\ResponseInterface)
-            {
-                /**
-                 * Automatically send the response
-                 */
-                $returnedValue->send();
-            }
+            $returnedValue->send();
         }
 
         return $returnedValue;
@@ -173,7 +157,6 @@ class Micro extends \Phalcon\Mvc\Micro
 
     public function group($prefix, \Closure $callback)
     {
-
         $scope = clone $this;
         $scope->prefix .= '/'.trim($prefix, '/');
 
@@ -306,7 +289,6 @@ class Store
     public function set($method, $prefix, $handler)
     {
         $prefix = trim($prefix,'/');
-
         if (true === in_array('/'.$prefix, $this->seg))
         {
             $this->{$method}[($prefix ? '/'.$prefix : '')] = $handler;
