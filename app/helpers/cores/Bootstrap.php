@@ -86,7 +86,14 @@ class Bootstrap
 
     private function initRoute(\Phalcon\Mvc\Micro $app)
     {
-        include_once __BASE__.'/app/config/route.php';
+        if(true === is_file(__BASE__.'/app/config/route.php'))
+        {
+            include_once __BASE__.'/app/config/route.php';
+        }
+        else
+        {
+            throw new \Exception(__BASE__.'/app/config/route.php 을 확인하세요.');
+        }
     }
 
     private function initDatabase()
