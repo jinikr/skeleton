@@ -1,5 +1,9 @@
 <?php
 
+use \App\Helpers\Cores\Bootstrap;
+use \Phalcon\DI\FactoryDefault as Di;
+use \App\Helpers\Cores\Mvc\Micro as Micro;
+
 try
 {
     define('__BASE__', dirname(dirname(__FILE__)));
@@ -10,8 +14,7 @@ try
         include_once __BASE__.'/app/helpers/function.php';
     }
 
-    $app = (new \App\Helpers\Cores\Bootstrap(new \Phalcon\DI\FactoryDefault))(new \App\Helpers\Cores\Mvc\Micro)
-    ->handle();
+    (new Bootstrap(new Di))(new Micro)->handle();
 }
 catch (\Exception $e)
 {
