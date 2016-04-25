@@ -31,10 +31,19 @@ class V2 extends \Phalcon\Mvc\Controller
         echo '<hr />';
     }
 
+    public function checkId()
+    {
+        $this->a++;
+
+        echo '<hr />';
+        echo 'V2 checkId';
+        echo '<hr />';
+    }
+
     public function after()
     {
-
         $this->a++;
+
         echo '<hr />';
         echo 'after';
         echo '<hr />';
@@ -43,11 +52,13 @@ class V2 extends \Phalcon\Mvc\Controller
     public function checkname($name)
     {
         $this->a++;
+
         echo '<hr />';
         echo 'checkname';
         echo '<hr />';
         $this->response->setContent('checkname : '. $name. ' ');
     }
+
     /**
      * index
      *
@@ -57,10 +68,9 @@ class V2 extends \Phalcon\Mvc\Controller
     {
         $response = $this->response;
         $request  = $this->request;
-
         $name = 'index';
         $response->setContent('v2 index');
-        //phpinfo();
+        phpinfo();
         return $response;
     }
 
