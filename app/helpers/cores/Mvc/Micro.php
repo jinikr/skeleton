@@ -243,7 +243,7 @@ class Store
         if (!static::$instance)
         {
             static::$instance = new self();
-            static::$instance->segments = explode('/', $_GET['_url']);
+            static::$instance->segments = explode('/', true === isset($_GET['_url']) ? $_GET['_url'] : '/');
             static::$instance->prefix = static::$instance->segments[1];
             static::$instance->method = strtolower($_SERVER['REQUEST_METHOD']);
             static::$instance->seg = [];
