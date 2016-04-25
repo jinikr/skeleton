@@ -5,7 +5,6 @@ namespace App\Helpers\Cores;
 class Bootstrap
 {
     private $di;
-    private $environment;
 
     public function __construct(\Phalcon\DI\FactoryDefault $di)
     {
