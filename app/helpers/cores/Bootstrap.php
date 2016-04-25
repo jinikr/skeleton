@@ -5,82 +5,93 @@ namespace App\Helpers\Cores;
 class Bootstrap
 {
     private $di;
-    private $collection;
-    private $config = [];
     private $environment;
 
     public function __construct(\Phalcon\DI\FactoryDefault $di)
     {
+        $this->setDi($di);
+    }
+
+    public function setDi(\Phalcon\DI\FactoryDefault $di)
+    {
         $this->di = $di;
     }
 
-    private function initConfig()
+    public function getDI()
+    {
+        return $this->di;
+    }
+
+    private function getConfigFile()
     {
         try
         {
             if (true === is_file(__BASE__.'/app/config/environment.php'))
             {
-                $environmentsConfig = include_once __BASE__.'/app/config/environment.php';
-                if (true === is_array($environmentsConfig)
-                    && true === isset($environmentsConfig['domains'])
-                    && true === is_array($environmentsConfig['domains']))
+                $globalConfig = include_once __BASE__.'/app/config/environment.php';
+                if (true === is_array($globalConfig)
+                    && true === isset($globalConfig['domains'])
+                    && true === is_array($globalConfig['domains']))
                 {
-                    foreach ($environmentsConfig['domains'] as $environment => $domain)
+                    foreach ($globalConfig['domains'] as $environment => $domain)
                     {
                         if (true === in_array(getenv('HTTP_HOST'), $domain)
-                            && is_file(__BASE__.'/app/config/environment/'.$environment.'.php'))
+                            && true === is_file(__BASE__.'/app/config/environment/'.$environment.'.php'))
                         {
                             $environmentConfig = include_once __BASE__.'/app/config/environment/'.$environment.'.php';
-                            $this->environment = $environment;
+                            $globalConfig['environment'] = $environment;
                             break;
                         }
                     }
                     if (true === isset($environmentConfig)
                         && true === is_array($environmentConfig))
                     {
-                        $this->config = array_merge($environmentsConfig, $environmentConfig);
+                        $config = array_merge($globalConfig, $environmentConfig);
                     }
                 }
             }
-            if (!$this->config)
+            if (false === isset($config) || !$config)
             {
                 throw new \Exception(__BASE__.'/app/config/environment.php 을 확인하세요.');
             }
         }
         catch(\Exception $e)
         {
-            throw new \Exception($e);
+            throw $e;
         }
+        return $config;
     }
 
-    private function initSession()
+    private function initConfig(array $config)
     {
-        $this->di['session'] = function ()
+        $this->di['config'] = function () use ($config)
         {
-            $session = new \Phalcon\Session\Adapter\Files();
-            $session->start();
-            return $session;
+            return (new \Phalcon\Config($config))->toArray();
         };
     }
 
-    private function initCollection()
+    private function initSession(array $config)
     {
-        function getParam(int $length)
+        $this->di['session'] = function () use ($config)
         {
-            $params = [];
-            $paramsStr = true === isset($_GET['_url']) ? $_GET['_url'] : '/';
-            $strParams = trim($paramsStr, '/');
-            if ($strParams !== "")
+            if(true === isset($config['session']))
             {
-                $params = explode("/", $strParams);
+                $session = new \Phalcon\Session\Adapter\Files();
+                $session->start();
+                return $session;
             }
-            return implode('/', array_slice($params, 0, $length));
-        }
+            else
+            {
+                throw new \Exception('session config를 확인하세요.');
+            }
+        };
+    }
 
-        if (($prefix = getParam(1))
-            && is_file(__BASE__.'/app/config/collections/'.$prefix.'.php'))
+    private function initPeanutDb(array $config)
+    {
+        if (true === isset($config['databases']))
         {
-            $this->collection = include_once __BASE__.'/app/config/collections/'.$prefix.'.php';
+            \Peanut\Db\Driver::setConnectInfo($config['databases']);
         }
     }
 
@@ -96,14 +107,6 @@ class Bootstrap
         }
     }
 
-    private function initDatabase()
-    {
-        if (true === isset($this->config['databases']))
-        {
-            \Peanut\Db\Driver::setConnectInfo($this->config['databases']);
-        }
-    }
-
     private function initRequest()
     {
         $this->di['request'] = function ()
@@ -114,10 +117,11 @@ class Bootstrap
 
     public function run(\Phalcon\Mvc\Micro $app)
     {
-        $this->initConfig();
-        $this->initSession();
-        //$this->initCollection();
-        $this->initDatabase();
+        $config = $this->getConfigFile();
+
+        // $this->initConfig($config);
+        $this->initSession($config);
+        $this->initPeanutDb($config);
         $this->initRequest();
         $this->initRoute($app);
 
