@@ -6,8 +6,9 @@ $app->after('\App\Controllers\V2->after');
 
 $app->group('v1', function()
 {
-    $this->param('name', '\App\Controllers\V2->checkName');
+    $this->param('name', '\App\Controllers\V1->checkName');
     $this->get('info/{name}', '\App\Controllers\V2->getInfo');
+    $this->get('info/{name}/{id}', '\App\Controllers\V1->getNameId');
     $this->post('info/{name}', '\App\Controllers\V2->postInfo');
     $this->delete('info/{name}', '\App\Controllers\V2->deleteInfo');
     $this->map('all', '\App\Controllers\V2->getInfo');
@@ -28,6 +29,7 @@ $app->group('v2', function()
     $this->get('', '\App\Controllers\V2->index');
 
     $this->group('info', function () {
+        $this->get('', '\App\Controllers\V2->index');
         $this->before('\App\Controllers\V2->before');
         $this->get('{name:[0-9a-zA-Z\-]{5,10}}.{ext}', '\App\Controllers\V2->getInfo');
     });
@@ -49,7 +51,7 @@ $app->group('v2', function()
         });
     });
 });
-$app->get   ('{name}', '\App\Controllers\V2->index');
+$app->get('{name}', '\App\Controllers\V2->index');
 
 $app->notFound(
     function () use ($app)
