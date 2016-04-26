@@ -12,12 +12,21 @@ class Bootstrap
         $this->initRequest(); // request는 config에서 사용하므로 생성자에서 초기화
     }
 
-    private function initRequest()
+    public function __invoke(\Phalcon\Mvc\Micro $app)
     {
-        $this->di->set('request', function ()
-        {
-            return new \App\Helpers\Cores\Http\Request();
-        });
+        $config = $this->getConfigFile();
+        return $this->run($app, $config);
+    }
+
+    public function run(\Phalcon\Mvc\Micro $app, array $config)
+    {
+        // $this->initConfig($config);
+        $this->initSession($config);
+        $this->initPeanutDb($config);
+        $this->initRoute($app);
+
+        $app->setDI($this->di);
+        return $app;
     }
 
     public function setDi(\Phalcon\DI\FactoryDefault $di)
@@ -57,15 +66,14 @@ class Bootstrap
                             break;
                         }
                     }
-                    if (false === isset($globalConfig['environment']))
+                    if (false === isset($globalConfig['environment']) || !$globalConfig['environment'])
                     {
-                        throw new \Exception($globalConfigFile.'을 확인하세요. $_SERVER[\'HTTP_HOST\']에 해당하는 domains 설정이 있는지 확인하세요.');
+                        throw new \Exception('Configuration file '.$globalConfigFile.' $_SERVER[\'HTTP_HOST\']에 해당하는 domains 설정이 있는지 확인하세요.');
                     }
                     $environmentConfigFile = $environmentConfigFolder.'/'.$globalConfig['environment'].'.php';
                     if(true === is_file($environmentConfigFile))
                     {
                         $environmentConfig = include_once $environmentConfigFile;
-
                         if (true === isset($environmentConfig)
                             && true === is_array($environmentConfig))
                         {
@@ -73,7 +81,7 @@ class Bootstrap
                         }
                         else
                         {
-                            throw new \Exception($globalConfigFile.'을 확인하세요. $_SERVER[\'HTTP_HOST\']에 해당하는 domains 설정이 있는지 확인하세요.');
+                            throw new \Exception('Configuration file '.$globalConfigFile.' '.$this->getHttpHost().'에 해당하는 domains 설정이 있는지 확인하세요.');
                         }
                     }
                     else
@@ -83,7 +91,7 @@ class Bootstrap
                 }
                 else
                 {
-                    throw new \Exception($globalConfigFile.'을 확인하세요. domains 설정이 잘못 되었습니다.');
+                    throw new \Exception('Configuration file '.$globalConfigFile.' domains 설정이 잘못 되었습니다.');
                 }
             }
             else
@@ -100,6 +108,14 @@ class Bootstrap
             throw $e;
         }
         return $config;
+    }
+
+    private function initRequest()
+    {
+        $this->di->set('request', function ()
+        {
+            return new \App\Helpers\Cores\Http\Request();
+        });
     }
 
     private function initConfig(array $config)
@@ -145,24 +161,6 @@ class Bootstrap
         {
             throw new \Exception(__BASE__.'/app/config/route.php 을 확인하세요.');
         }
-    }
-
-    public function run(\Phalcon\Mvc\Micro $app)
-    {
-        $config = $this->getConfigFile();
-
-        // $this->initConfig($config);
-        $this->initSession($config);
-        $this->initPeanutDb($config);
-        $this->initRoute($app);
-
-        $app->setDI($this->di);
-        return $app;
-    }
-
-    public function __invoke(\Phalcon\Mvc\Micro $app)
-    {
-        return $this->run($app);
     }
 
 }
