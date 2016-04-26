@@ -67,7 +67,7 @@ class Bootstrap
                     {
                         throw new \Exception('Configuration file '.$configFile.' '.$this->getHttpHost().'에 해당하는 domains 설정이 있는지 확인하세요.');
                     }
-                    $envConfigFile = __BASE__.'/app/config/environment/'.$globalConfig['environment'].'.php';
+                    $envConfigFile = dirname($configFile).'/environment/'.$globalConfig['environment'].'.php';
                     if(true === is_file($envConfigFile))
                     {
                         $envConfig = include_once $envConfigFile;
