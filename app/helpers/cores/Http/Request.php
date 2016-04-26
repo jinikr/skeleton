@@ -287,14 +287,26 @@ class Request extends \Phalcon\Http\Request
         return true === isset($params[$key]) ? $params[$key] : '';
     }
 
-    /**
-     * Gets params
-     *
-     * @return array
-     */
     public function getParams()
     {
         return $this->getDI()->get('router')->getParams();
+    }
+
+    public function getRewriteUri()
+    {
+        return $this->getDI()->get('router')->getRewriteUri();
+    }
+
+    public function getSegments()
+    {
+        $uri = trim($this->getDI()->get('router')->getRewriteUri(), '/');
+
+        $segments = [];
+        if (false === empty($uri))
+        {
+            $segments = explode('/', $uri);
+        }
+        return $segments;
     }
 
 }

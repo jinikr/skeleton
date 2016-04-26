@@ -9,6 +9,15 @@ class Bootstrap
     public function __construct(\Phalcon\DI\FactoryDefault $di)
     {
         $this->setDi($di);
+        $this->initRequest(); // request는 config에서 사용하므로 생성자에서 초기화
+    }
+
+    private function initRequest()
+    {
+        $this->di->set('request', function ()
+        {
+            return new \App\Helpers\Cores\Http\Request();
+        });
     }
 
     public function setDi(\Phalcon\DI\FactoryDefault $di)
@@ -21,37 +30,69 @@ class Bootstrap
         return $this->di;
     }
 
+    private function getHttpHost()
+    {
+        return $this->getDi()->get('request')->getHttpHost();
+    }
+
     private function getConfigFile()
     {
         try
         {
-            if (true === is_file(__BASE__.'/app/config/environment.php'))
+            $globalConfigFile = __BASE__.'/app/config/environment.php';
+            $environmentConfigFolder = __BASE__.'/app/config/environment';
+
+            if (true === is_file($globalConfigFile))
             {
-                $globalConfig = include_once __BASE__.'/app/config/environment.php';
+                $globalConfig = include_once $globalConfigFile;
                 if (true === is_array($globalConfig)
                     && true === isset($globalConfig['domains'])
                     && true === is_array($globalConfig['domains']))
                 {
                     foreach ($globalConfig['domains'] as $environment => $domain)
                     {
-                        if (true === in_array(getenv('HTTP_HOST'), $domain)
-                            && true === is_file(__BASE__.'/app/config/environment/'.$environment.'.php'))
+                        if (true === in_array($this->getHttpHost(), $domain))
                         {
-                            $environmentConfig = include_once __BASE__.'/app/config/environment/'.$environment.'.php';
                             $globalConfig['environment'] = $environment;
                             break;
                         }
                     }
-                    if (true === isset($environmentConfig)
-                        && true === is_array($environmentConfig))
+                    if (false === isset($globalConfig['environment']))
                     {
-                        $config = array_merge($globalConfig, $environmentConfig);
+                        throw new \Exception($globalConfigFile.'을 확인하세요. $_SERVER[\'HTTP_HOST\']에 해당하는 domains 설정이 있는지 확인하세요.');
+                    }
+                    $environmentConfigFile = $environmentConfigFolder.'/'.$globalConfig['environment'].'.php';
+                    if(true === is_file($environmentConfigFile))
+                    {
+                        $environmentConfig = include_once $environmentConfigFile;
+
+                        if (true === isset($environmentConfig)
+                            && true === is_array($environmentConfig))
+                        {
+                            $config = array_merge($globalConfig, $environmentConfig);
+                        }
+                        else
+                        {
+                            throw new \Exception($globalConfigFile.'을 확인하세요. $_SERVER[\'HTTP_HOST\']에 해당하는 domains 설정이 있는지 확인하세요.');
+                        }
+                    }
+                    else
+                    {
+                        throw new \Exception('Configuration file '.$environmentConfigFile.' can\'t be loaded.');
                     }
                 }
+                else
+                {
+                    throw new \Exception($globalConfigFile.'을 확인하세요. domains 설정이 잘못 되었습니다.');
+                }
+            }
+            else
+            {
+                throw new \Exception('Configuration file '.$globalConfigFile.' can\'t be loaded.');
             }
             if (false === isset($config) || !$config)
             {
-                throw new \Exception(__BASE__.'/app/config/environment.php 을 확인하세요.');
+                throw new \Exception($globalConfigFile.'을 확인하세요.');
             }
         }
         catch(\Exception $e)
@@ -65,7 +106,7 @@ class Bootstrap
     {
         $this->di['config'] = function () use ($config)
         {
-            return (new \Phalcon\Config($config))->toArray();
+            return $config;//(new \Phalcon\Config($config))->toArray();
         };
     }
 
@@ -106,14 +147,6 @@ class Bootstrap
         }
     }
 
-    private function initRequest()
-    {
-        $this->di['request'] = function ()
-        {
-            return new \App\Helpers\Cores\Http\Request();
-        };
-    }
-
     public function run(\Phalcon\Mvc\Micro $app)
     {
         $config = $this->getConfigFile();
@@ -121,7 +154,6 @@ class Bootstrap
         // $this->initConfig($config);
         $this->initSession($config);
         $this->initPeanutDb($config);
-        $this->initRequest();
         $this->initRoute($app);
 
         $app->setDI($this->di);

@@ -229,31 +229,50 @@ class Micro extends \Phalcon\Mvc\Micro
 class Store
 {
     private static $instance; //The single instance
-    private $routes=[];
-    private $before=[];
-    private $after=[];
-    private $param=[];
+
+    private $routes = [];
+    private $before = [];
+    private $after = [];
+    private $param = [];
+
+    private $segments = [];
+    private $segmentParts = [];
+
     private $prefix;
-    private $segments;
     private $method;
     private $class;
+
+    private function getSegments()
+    {
+        return \Phalcon\Di::getDefault()->get('request')->getSegments();
+    }
+
+    private function getMethod()
+    {
+        return \Phalcon\Di::getDefault()->get('request')->getMethod();
+    }
+
+    public function init()
+    {
+        $this->segments = $this->getSegments();
+        array_unshift($this->segments, '');
+        $this->prefix = true === isset($this->segments[1]) ? $this->segments[1] : '';
+        $this->method = strtolower($this->getMethod());
+        $this->segmentParts = [];
+        $tmp = '';
+        foreach ($this->segments as $key => $value)
+        {
+            $tmp .= ($value ? '/'.$value : '');
+            $this->segmentParts[] = ($tmp ?: '/');
+        }
+        return $this;
+    }
 
     public static function getInstance()
     {
         if (!static::$instance)
         {
-            static::$instance = new self();
-            static::$instance->segments = explode('/', true === isset($_GET['_url']) ? $_GET['_url'] : '/');
-            static::$instance->prefix = static::$instance->segments[1];
-            static::$instance->method = strtolower($_SERVER['REQUEST_METHOD']);
-            static::$instance->seg = [];
-            $tmp = '';
-            foreach (static::$instance->segments as $key => $value)
-            {
-                $tmp .= ($value ? '/'.$value : '');
-                static::$instance->seg[] = ($tmp ?: '/');
-            }
-            array_pop(static::$instance->seg);
+            static::$instance = (new self())->init();
         }
         return static::$instance;
     }
@@ -263,7 +282,7 @@ class Store
         $prefix = trim($prefix,'/');
         $routePattern = trim($routePattern,'/');
 
-        if ($method === static::$instance->method)
+        if ('map' === $method || $method === static::$instance->method)
         {
             if (true === empty($prefix)
                 || (false === empty($this->prefix) && 0 === strpos($prefix, $this->prefix)))
@@ -278,10 +297,15 @@ class Store
         }
     }
 
+    public function getRoutes()
+    {
+        return $this->routes;
+    }
+
     public function set($method, $prefix, $handler)
     {
         $prefix = trim($prefix,'/');
-        if (true === in_array('/'.$prefix, $this->seg))
+        if (true === in_array('/'.$prefix, $this->segmentParts))
         {
             $this->{$method}[($prefix ? '/'.$prefix : '')] = $handler;
         }
@@ -290,11 +314,6 @@ class Store
     public function get($method)
     {
         return $this->{$method};
-    }
-
-    public function getRoutes()
-    {
-        return $this->routes;
     }
 
     public function load($className)
