@@ -50,7 +50,7 @@ class Bootstrap
         {
             if (true === is_file($configFile))
             {
-                $globalConfig = include_once $configFile;
+                $globalConfig = include $configFile;
                 if (true === is_array($globalConfig)
                     && true === isset($globalConfig['domains'])
                     && true === is_array($globalConfig['domains']))
@@ -70,7 +70,7 @@ class Bootstrap
                     $envConfigFile = dirname($configFile).'/environment/'.$globalConfig['environment'].'.php';
                     if(true === is_file($envConfigFile))
                     {
-                        $envConfig = include_once $envConfigFile;
+                        $envConfig = include $envConfigFile;
                         if (true === is_array($envConfig))
                         {
                             $config = array_merge($globalConfig, $envConfig);
@@ -151,7 +151,7 @@ class Bootstrap
     {
         if(true === is_file(__BASE__.'/app/config/route.php'))
         {
-            include_once __BASE__.'/app/config/route.php';
+            include __BASE__.'/app/config/route.php';
         }
         else
         {
