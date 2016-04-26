@@ -14,7 +14,7 @@ class Bootstrap
 
     public function __invoke(\Phalcon\Mvc\Micro $app)
     {
-        $config = $this->getConfigFile();
+        $config = $this->getConfigFile(__BASE__.'/app/config/environment.php');
         return $this->run($app, $config);
     }
 
@@ -44,16 +44,13 @@ class Bootstrap
         return $this->getDi()->get('request')->getHttpHost();
     }
 
-    private function getConfigFile()
+    private function getConfigFile($configFile)
     {
         try
         {
-            $globalConfigFile = __BASE__.'/app/config/environment.php';
-            $environmentConfigFolder = __BASE__.'/app/config/environment';
-
-            if (true === is_file($globalConfigFile))
+            if (true === is_file($configFile))
             {
-                $globalConfig = include_once $globalConfigFile;
+                $globalConfig = include_once $configFile;
                 if (true === is_array($globalConfig)
                     && true === isset($globalConfig['domains'])
                     && true === is_array($globalConfig['domains']))
@@ -68,39 +65,38 @@ class Bootstrap
                     }
                     if (false === isset($globalConfig['environment']) || !$globalConfig['environment'])
                     {
-                        throw new \Exception('Configuration file '.$globalConfigFile.' $_SERVER[\'HTTP_HOST\']에 해당하는 domains 설정이 있는지 확인하세요.');
+                        throw new \Exception('Configuration file '.$configFile.' '.$this->getHttpHost().'에 해당하는 domains 설정이 있는지 확인하세요.');
                     }
-                    $environmentConfigFile = $environmentConfigFolder.'/'.$globalConfig['environment'].'.php';
-                    if(true === is_file($environmentConfigFile))
+                    $envConfigFile = __BASE__.'/app/config/environment/'.$globalConfig['environment'].'.php';
+                    if(true === is_file($envConfigFile))
                     {
-                        $environmentConfig = include_once $environmentConfigFile;
-                        if (true === isset($environmentConfig)
-                            && true === is_array($environmentConfig))
+                        $envConfig = include_once $envConfigFile;
+                        if (true === is_array($envConfig))
                         {
-                            $config = array_merge($globalConfig, $environmentConfig);
+                            $config = array_merge($globalConfig, $envConfig);
                         }
                         else
                         {
-                            throw new \Exception('Configuration file '.$globalConfigFile.' '.$this->getHttpHost().'에 해당하는 domains 설정이 있는지 확인하세요.');
+                            throw new \Exception('Configuration file '.$configFile.' '.$this->getHttpHost().'에 해당하는 domains 설정이 있는지 확인하세요.');
                         }
                     }
                     else
                     {
-                        throw new \Exception('Configuration file '.$environmentConfigFile.' can\'t be loaded.');
+                        throw new \Exception('Configuration file '.$envConfigFile.' can\'t be loaded.');
                     }
                 }
                 else
                 {
-                    throw new \Exception('Configuration file '.$globalConfigFile.' domains 설정이 잘못 되었습니다.');
+                    throw new \Exception('Configuration file '.$configFile.' domains 설정이 잘못 되었습니다.');
                 }
             }
             else
             {
-                throw new \Exception('Configuration file '.$globalConfigFile.' can\'t be loaded.');
+                throw new \Exception('Configuration file '.$configFile.' can\'t be loaded.');
             }
-            if (false === isset($config) || !$config)
+            if (false === isset($config) || !$config || false === is_array($config))
             {
-                throw new \Exception($globalConfigFile.'을 확인하세요.');
+                throw new \Exception($configFile.'을 확인하세요.');
             }
         }
         catch(\Exception $e)
