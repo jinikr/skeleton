@@ -77,12 +77,12 @@ class Bootstrap
                         }
                         else
                         {
-                            throw new \Exception('Configuration file '.$configFile.' '.$this->getHttpHost().'에 해당하는 domains 설정이 있는지 확인하세요.');
+                            throw new \Exception('Configuration file '.$envConfig.' array 형식으로 설정하세요..');
                         }
                     }
                     else
                     {
-                        $config = $globalConfig;
+                        throw new \Exception('Configuration file '.$envConfig.' can\'t be loaded');
                     }
                 }
                 else
