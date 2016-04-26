@@ -108,10 +108,10 @@ class Bootstrap
 
     private function initRequest()
     {
-        $this->di->set('request', function ()
+        $this->di['request'] = function ()
         {
             return new \App\Helpers\Cores\Http\Request();
-        });
+        };
     }
 
     private function initConfig(array $config)
