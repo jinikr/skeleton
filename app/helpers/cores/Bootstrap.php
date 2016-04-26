@@ -82,7 +82,7 @@ class Bootstrap
                     }
                     else
                     {
-                        throw new \Exception('Configuration file '.$envConfigFile.' can\'t be loaded.');
+                        $config = $globalConfig;
                     }
                 }
                 else
