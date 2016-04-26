@@ -69,46 +69,66 @@ class Micro extends \Phalcon\Mvc\Micro
                 }
                 $this->_activeHandler = $handler;
 
-                $paramHandlers = Store::getInstance()->get('param');
-                if (true === is_array($paramHandlers))
+                $routeParamHandlers = Store::getInstance()->get('param');
+                if (true === is_array($routeParamHandlers))
                 {
-                    foreach ($paramHandlers as $key => $param)
+                    foreach ($routeParamHandlers as $paramHandlers)
                     {
-                        if (true === isset($params[$param[0]]))
+                        if (true === is_array($paramHandlers))
                         {
-                            $status = $this->callHandler('param', $param[1], [$params[$param[0]]]);
-                            if (false === $status)
+                            foreach ($paramHandlers as $paramHandler)
                             {
-                                return false;
+                                if (true === isset($paramHandler[0])
+                                    && true === isset($paramHandler[1])
+                                    && true === isset($params[$paramHandler[0]]))
+                                {
+                                    $status = $this->callHandler('param', $paramHandler[1], [$params[$paramHandler[0]]]);
+                                    if (false === $status)
+                                    {
+                                        return false;
+                                    }
+                                }
                             }
                         }
                     }
                 }
 
-                $beforeHandlers = Store::getInstance()->get('before');
-                if (true === is_array($beforeHandlers))
+                $routeBeforeHandlers = Store::getInstance()->get('before');
+                if (true === is_array($routeBeforeHandlers))
                 {
-                    foreach ($beforeHandlers as $before)
+                    foreach ($routeBeforeHandlers as $beforeHandlers)
                     {
-                        $status = $this->callHandler('before', $before);
-                        if (false === $status)
+                        if (true === is_array($beforeHandlers))
                         {
-                            return false;
+                            foreach ($beforeHandlers as $beforeHandler)
+                            {
+                                $status = $this->callHandler('before', $beforeHandler);
+                                if (false === $status)
+                                {
+                                    return false;
+                                }
+                            }
                         }
                     }
                 }
 
                 $returnedValue = $this->callHandler('class', $handler, $params);
 
-                $afterHandlers = Store::getInstance()->get('after');
-                if (true === is_array($afterHandlers))
+                $routeAfterHandlers = Store::getInstance()->get('after');
+                if (true === is_array($routeAfterHandlers))
                 {
-                    foreach ($afterHandlers as $after)
+                    foreach ($routeAfterHandlers as $afterHandlers)
                     {
-                        $status = $this->callHandler('after', $after);
-                        if (false === $status)
+                        if (true === is_array($afterHandlers))
                         {
-                            return false;
+                            foreach ($afterHandlers as $afterHandler)
+                            {
+                                $status = $this->callHandler('after', $afterHandler);
+                                if (false === $status)
+                                {
+                                    return false;
+                                }
+                            }
                         }
                     }
                 }
@@ -307,7 +327,7 @@ class Store
         $prefix = trim($prefix,'/');
         if (true === in_array('/'.$prefix, $this->segmentParts))
         {
-            $this->{$method}[($prefix ? '/'.$prefix : '')] = $handler;
+            $this->{$method}[($prefix ? '/'.$prefix : '')][] = $handler;
         }
     }
 
