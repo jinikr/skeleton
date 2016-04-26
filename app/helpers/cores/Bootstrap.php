@@ -14,6 +14,7 @@ class Bootstrap
 
     public function __invoke(\Phalcon\Mvc\Micro $app)
     {
+        $this->initRoute($app);
         $config = $this->getConfigFile(__BASE__.'/app/config/environment.php');
         return $this->run($app, $config);
     }
@@ -23,7 +24,6 @@ class Bootstrap
         // $this->initConfig($config);
         $this->initSession($config);
         $this->initPeanutDb($config);
-        $this->initRoute($app);
 
         $app->setDI($this->di);
         return $app;
