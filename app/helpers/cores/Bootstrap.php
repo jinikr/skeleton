@@ -29,12 +29,12 @@ class Bootstrap
         return $app;
     }
 
-    public function setDi(\Phalcon\DI\FactoryDefault $di)
+    private function setDi(\Phalcon\DI\FactoryDefault $di)
     {
         $this->di = $di;
     }
 
-    public function getDI()
+    private function getDI()
     {
         return $this->di;
     }
@@ -44,7 +44,7 @@ class Bootstrap
         return $this->getDi()->get('request')->getHttpHost();
     }
 
-    private function getConfigFile($configFile)
+    public function getConfigFile($configFile)
     {
         try
         {
