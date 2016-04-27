@@ -1,8 +1,8 @@
 <?php
 
-use \App\Helpers\Cores\Bootstrap;
 use \Phalcon\DI\FactoryDefault as Di;
-use \App\Helpers\Cores\Mvc\Micro;
+use \Peanut\Bootstrap;
+use \Peanut\Phalcon\Mvc\Micro;
 
 try
 {

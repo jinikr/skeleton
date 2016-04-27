@@ -1,23 +1,17 @@
 {
     "require": {
-        "peanut/db": "dev-master",
-        "peanut/migration": "dev-master"
+        "yejune/peanut": "dev-master"
     },
     "autoload": {
         "psr-4": {
             "App\\": "app/",
-            "Peanut\\Db\\": "vendor/peanut/db/",
-            "Peanut\\Migration\\": "vendor/peanut/migration/src/Migration/"
+            "Peanut\\": "vendor/yejune/peanut/src/Peanut/"
         }
     },
     "repositories": [
         {
             "type": "git",
-            "url":  "https://github.com/yejune/peanut-database.git"
-        },
-        {
-            "type": "git",
-            "url":  "https://github.com/yejune/peanut-migration.git"
+            "url":  "https://github.com/yejune/peanut-phalcon.git"
         }
     ],
     "require-dev": {
