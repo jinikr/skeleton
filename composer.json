@@ -8,12 +8,6 @@
             "Peanut\\": "vendor/yejune/peanut/src/Peanut/"
         }
     },
-    "repositories": [
-        {
-            "type": "git",
-            "url":  "https://github.com/yejune/peanut-phalcon.git"
-        }
-    ],
     "require-dev": {
         "squizlabs/php_codesniffer": "*",
         "phing/phing": "*",
