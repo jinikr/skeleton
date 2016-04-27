@@ -1,4 +1,5 @@
 {
+    "name": "yejune/skeleton",
     "require": {
         "yejune/peanut": "dev-master"
     },
