@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use Peanut\Db\Driver as Db;
+use Peanut\Phalcon\Pdo\Mysql as Db;
 
 class user
 {
@@ -17,6 +17,17 @@ class user
     public static function getUserList()
     {
         return Db::name('slave')->gets("select * from user limit 10");
+    }
+
+    public static function checkUser()
+    {
+        return Db::name('slave')->get1("select count(*) from user") === Db::name('slave')->get1("select count(*) from point") ? Db::name('slave')->get1("select count(*) from point") : 'diff';
+    }
+
+    public static function truncatUser()
+    {
+        Db::name('master')->set("truncate table user");
+        Db::name('master')->set("truncate table point");
     }
 
     public static function setUser($name)

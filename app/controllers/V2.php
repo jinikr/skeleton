@@ -2,7 +2,7 @@
 
 namespace App\Controllers;
 
-use Peanut\Db\Driver as Db;
+use Peanut\Phalcon\Pdo\Mysql as Db;
 use App\Models\User as UserModel;
 
 class V2 extends \Phalcon\Mvc\Controller
@@ -34,7 +34,6 @@ class V2 extends \Phalcon\Mvc\Controller
     public function checkId()
     {
         $this->a++;
-
         echo '<hr />';
         echo 'V2 checkId';
         echo '<hr />';
@@ -70,7 +69,20 @@ class V2 extends \Phalcon\Mvc\Controller
         $request  = $this->request;
         $name = 'index';
         $response->setContent('v2 index');
-        phpinfo();
+        return $response;
+    }
+
+    /**
+     * index
+     *
+     * @return $response
+     */
+    public function root()
+    {
+        $response = $this->response;
+        $request  = $this->request;
+        $name = 'index';
+        $response->setContent('v2 root');
         return $response;
     }
 
@@ -90,13 +102,15 @@ class V2 extends \Phalcon\Mvc\Controller
         pr($request->getParam('name'));
         pr($this->tmp);
         UserModel::getUserList();
+        //UserModel::truncatUser();
         $pointSeq = Db::name('master')->transaction(
-            function() use  ($response)
+            function()
             {
                 $userSeq = UserModel::setUser('test2'.microtime());
                 return $pointSeq = UserModel::setUserPoint($userSeq, 100);
             }
         );
+        var_dump(UserModel::checkUser());
         $response->setContent($response->getContent().'v2 getInfo '.$name.$pointSeq.'.'.$ext);
 
         return $response;
