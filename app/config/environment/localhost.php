@@ -42,7 +42,7 @@ return [
         ],
     ],
     'database' => [
-        'profiler' => true
+        'profile' => true
     ],
     'session' => true,
 ];

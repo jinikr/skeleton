@@ -11,7 +11,7 @@ class V1 extends \Phalcon\Mvc\Controller
         $response = $this->response;
         $request = $this->request;
 
-        $name = 'index';
+        echo $name = 'index';
         $response->setContent('v1 index');
 
         return $response;
