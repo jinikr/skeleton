@@ -13,7 +13,7 @@ ini_set('session.cookie_path', '/');
 return [
     'databases' => [
         'master' => [
-            'dsn'      => "mysql:host=localhost;dbname=api;charset=utf8",
+            'dsn'      => ":mysql:host=localhost;dbname=api;charset=utf8",
             'username' => "apiuser",
             'password' => "apipw",
             'charset'  => "utf8",
@@ -24,7 +24,7 @@ return [
                 \PDO::ATTR_PERSISTENT => false,
                 //\PDO::ATTR_AUTOCOMMIT => false,
                 //\PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'UTF8'"
-            ]
+            ],
         ],
         'slave' => [
             'dsn'      => "mysql:host=localhost;dbname=api;charset=utf8",
@@ -38,8 +38,11 @@ return [
                 \PDO::ATTR_PERSISTENT => false,
                 //\PDO::ATTR_AUTOCOMMIT => false,
                 //\PDO::MYSQL_ATTR_INIT_COMMAND => "SET NAMES 'UTF8'"
-            ]
+            ],
         ],
+    ],
+    'database' => [
+        'profiler' => true
     ],
     'session' => true,
 ];
