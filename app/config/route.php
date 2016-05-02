@@ -1,27 +1,35 @@
 <?php
 
-$app->param('id', '\App\Controllers\V2->checkId');
-$app->param('name', '\App\Controllers\V2->checkId');
-$app->before('', function() {echo 'before<br />';});
-$app->after('', function() {echo 'after<br />';});
-
-$app->get('/{name}', function() {echo '/{name}<br />';});
-
+/*
 $app->get('/test', function() {echo '/test<br />';});
 $app->get('/test/{name}', function($name) {echo '/test/info : '.$name.'<br />';});
 $app->param('/test/{name}', 'name', '\App\Controllers\V2->checkId');
 $app->after('/test/{name}', function() {echo '!!!after<br />';});
 $app->after('/test/{name:[0-9]+}', function() {echo 'iiiafter<br />';});
+*/
+$app->pattern('test')
+    ->get(function(){echo 'test';});
 
-$app->get('v2/info/{name}.{ext}', '\App\Controllers\V2->getInfo');
+$app->pattern('v2/info/{name}.{ext}')
+    ->get('\App\Controllers\V2->getInfo');
 
+$app->group('test', function() {
+    $this->pattern('test')
+        ->methods(['get'])
+        ->any(function() {echo 'any';});
+});
+$app->methods(['post', 'get'])->after(function()
+{
+    echo '<b>after</b>';
+});
+/*
 $app->group('test', function() {
     $this->get('max', function() {echo 'real name : seungmin<br />';});
     $this->group('test', function() {
         $this->get('max', function() {echo 'real name : seungmin<br />';});
     });
 });
-
+*/
 $app->get('/', function() {echo '/<br />';});
 $app->notFound(
     function () use ($app)
@@ -37,3 +45,5 @@ $app->error(
         pr($e);
     }
 );
+
+
