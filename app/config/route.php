@@ -1,36 +1,88 @@
 <?php
 
-/*
-$app->get('/test', function() {echo '/test<br />';});
-$app->get('/test/{name}', function($name) {echo '/test/info : '.$name.'<br />';});
-$app->param('/test/{name}', 'name', '\App\Controllers\V2->checkId');
-$app->after('/test/{name}', function() {echo '!!!after<br />';});
-$app->after('/test/{name:[0-9]+}', function() {echo 'iiiafter<br />';});
-*/
-$app->pattern('test')
-    ->get(function(){echo 'test';});
-
-$app->pattern('v2/info/{name}.{ext}')
-    ->get('\App\Controllers\V2->getInfo');
-
-$app->group('test', function() {
-    $this->pattern('test')
-        ->methods(['get'])
-        ->any(function() {echo 'any';});
-});
-$app->methods(['post', 'get'])->after(function()
+$app->group('huga', function() use ($app)
 {
-    echo '<b>after</b>';
-});
-/*
-$app->group('test', function() {
-    $this->get('max', function() {echo 'real name : seungmin<br />';});
-    $this->group('test', function() {
-        $this->get('max', function() {echo 'real name : seungmin<br />';});
+    $app->before(function()
+    {
+        echo 'huga before';
+    });
+    $app->get(function()
+    {
+        echo 'huga index page';
+    });
+    $app->get('add', function()
+    {
+
+    });
+    $app->get('view/{view_id:[0-9]+}', function()
+    {
+
+    });
+    $app->get('write', function()
+    {
+
+    });
+    $app->after(function() {
+        echo 'huga after';
     });
 });
-*/
-$app->get('/', function() {echo '/<br />';});
+$app->group('board', function() use ($app)
+{
+    $app->before(function()
+    {
+        echo 'board before';
+    });
+    $app->get(function()
+    {
+        echo 'board index page';
+    });
+    $app->group('{board_id:[a-z0-9A-Z]+}', function() use ($app)
+    {
+        $app->param('board_id', function($boardId)
+        {
+            $this->board = $boardId;
+            echo 'board id : ' .$boardId;
+        });
+        $app->param('view_id', function($viewId)
+        {
+            $this->view = $viewId;
+            echo 'view id : ' .$viewId;
+        });
+        $app->get(function($boardId)
+        {
+            echo 'board index page <b>'.$boardId.'</b>';
+        });
+        $app->get('add', function($board)
+        {
+            echo 'add '.($this->board === $board ? $board : false);
+        });
+        $app->get('view/{view_id:[0-9]+}', function($boardId, $viewId)
+        {
+            echo '<hr />';
+            echo $viewId;
+            echo '<hr />';
+        });
+        $app->get('write', function()
+        {
+
+        });
+    });
+    $app->after(function()
+    {
+        echo 'board after';
+    });
+});
+$app->get('info', function()
+{
+    phpinfo();
+});
+$app->get(function()
+{
+    echo '/';
+});
+
+
+$app->get(function() {echo '/<br />';});
 $app->notFound(
     function () use ($app)
     {
