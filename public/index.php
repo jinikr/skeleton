@@ -8,13 +8,9 @@ try
 {
     define('__BASE__', dirname(dirname(__FILE__)));
 
-    {
-        include_once __BASE__."/vendor/autoload.php";
-        include_once __BASE__.'/app/helpers/debug.php';
-        include_once __BASE__.'/app/helpers/function.php';
-    }
-
-    (new Bootstrap(new Di))(new Micro)->handle();
+    include_once __BASE__."/vendor/autoload.php";
+    include_once __BASE__.'/app/helpers/function.php';
+    (new Bootstrap\Yaml(new Di))(new Micro)->handle();
 }
 catch (\Exception $e)
 {

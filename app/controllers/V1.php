@@ -39,8 +39,50 @@ class V1 extends \Phalcon\Mvc\Controller
     {
         $response = $this->response;
         $request = $this->request;
+        $response->setContent($response->getContent().' getInfo');
 
-        $response->setContent('v1 getInfo '.$name);
+        return $response;
+    }
+
+    public function getNumber($huga, $name)
+    {
+        $response = $this->response;
+        $request = $this->request;
+        $response->setContent($response->getContent().' getNumber');
+
+        return $response;
+    }
+
+    public function checkId()
+    {
+        $response = $this->response;
+        $request = $this->request;
+        $response->setContent($response->getContent().' checkId');
+
+        return $response;
+    }
+
+    public function checkId2()
+    {
+        $response = $this->response;
+        $request = $this->request;
+        $response->setContent($response->getContent().' checkId2');
+
+        return $response;
+    }
+    public function before()
+    {
+        $response = $this->response;
+        $request = $this->request;
+        $response->setContent($response->getContent().' before');
+
+        return $response;
+    }
+    public function after()
+    {
+        $response = $this->response;
+        $request = $this->request;
+        $response->setContent($response->getContent().' after');
 
         return $response;
     }
