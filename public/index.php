@@ -10,7 +10,9 @@ try
 
     include_once __BASE__."/vendor/autoload.php";
     include_once __BASE__.'/app/helpers/function.php';
-    (new Bootstrap\Yaml(new Di))(new Micro)->handle();
+
+    $bootstrap = new Bootstrap\Yaml(new Di);
+    $bootstrap(new Micro)->handle();
 }
 catch (\Exception $e)
 {
