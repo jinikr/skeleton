@@ -12,6 +12,9 @@
     "require-dev": {
         "squizlabs/php_codesniffer": "*",
         "phing/phing": "*",
+        "phalcon/incubator": "*",
+        "deployer/deployer": "^3.2",
+        "deployphp/recipes": "~3.0",
         "mayflower/php-codebrowser": "*"
     }
 }
