@@ -1,0 +1,53 @@
+version: '2'
+services:
+  application:
+    image: busybox
+    volumes:
+     - .:/var/www
+    tty: true
+    networks:
+      mynet:
+        ipv4_address: 172.26.0.100
+
+  nginx:
+    build: ./.docker/nginx
+    ports:
+      - "80:80"
+    links:
+      - php
+    volumes_from:
+      - application
+    environment:
+      DNSDOCK_ALIAS: www.project.docker
+    networks:
+      mynet:
+        ipv4_address: 172.26.0.101
+
+  php:
+    build: ./.docker/php-fpm
+    expose:
+      - "9000"
+    volumes_from:
+      - application
+    links:
+      - db
+    networks:
+       mynet:
+         ipv4_address: 172.26.0.103
+
+  db:
+    image: mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+    networks:
+        mynet:
+          ipv4_address: 172.26.0.102
+
+networks:
+  mynet:
+    driver: bridge
+    ipam:
+      config:
+      - subnet: 172.26.0.0/24
