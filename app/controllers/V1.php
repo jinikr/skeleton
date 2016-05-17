@@ -35,12 +35,12 @@ class V1 extends \Phalcon\Mvc\Controller
         echo '<hr />';
     }
 
-    public function getInfo($name)
+    public function getInfo($huga, $name)
     {
         $response = $this->response;
         $request = $this->request;
-        $response->setContent($response->getContent().' getInfo');
 
+        $response->setContent($response->getContent().' getInfo : '.$name);
         return $response;
     }
 
@@ -48,11 +48,53 @@ class V1 extends \Phalcon\Mvc\Controller
     {
         $response = $this->response;
         $request = $this->request;
-        $response->setContent($response->getContent().' getNumber');
 
+        $response->setContent($response->getContent().' getNumber');
         return $response;
     }
 
+    public function put()
+    {
+        echo $this->queue->put(['clearup', date('Y/m/d H:i:s')]);
+        //echo $this->queue->putInTube('clearup', date('Y/m/d H:i:s'));
+
+    }
+    public function rev()
+    {
+        /*
+        echo $this->queue2->put(['clearup2', time()]);
+        while (($job = $this->queue2->peekReady()) !== false) {
+
+            $message = $job->getBody();
+
+            pr($message);
+
+            $job->delete();
+        }
+        */
+        /*
+        $tube = 'clearup';
+        if($this->queue->getTubes())
+        {
+            $stats = $this->queue->getTubeStats($tube);
+            if(true === isset($stats['current-jobs-ready']) && $stats['current-jobs-ready'])
+            {
+                $job = $this->queue->reserveFromTube($tube);
+                pr($job);
+                pr($job->getBody());
+                $job->delete();
+            }
+            else
+            {
+                echo 'empty';
+            }
+        }
+        else
+        {
+            echo 'empty';
+        }
+        */
+    }
     public function checkId()
     {
         $response = $this->response;
@@ -82,8 +124,9 @@ class V1 extends \Phalcon\Mvc\Controller
     {
         $response = $this->response;
         $request = $this->request;
-        $response->setContent($response->getContent().' after');
 
+
+        $response->setContent($response->getContent().' after');
         return $response;
     }
 

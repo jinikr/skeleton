@@ -5,23 +5,21 @@ services:
     volumes:
      - .:/var/www
     tty: true
-    networks:
-      mynet:
-        ipv4_address: 172.26.0.100
+
 
   nginx:
     build: ./.docker/nginx
-    ports:
-      - "80:80"
+    expose:
+      - "80"
     links:
       - php
     volumes_from:
       - application
+    volumes:
+      - ./var/log:/var/log/nginx
     environment:
       DNSDOCK_ALIAS: www.project.docker
-    networks:
-      mynet:
-        ipv4_address: 172.26.0.101
+
 
   php:
     build: ./.docker/php-fpm
@@ -29,25 +27,52 @@ services:
       - "9000"
     volumes_from:
       - application
+    volumes:
+     - ./var/log:/var/log
     links:
-      - db
-    networks:
-       mynet:
-         ipv4_address: 172.26.0.103
+      - mysql
+      - memcached
+      - redis
+      - beanstalk
+      - rabbitmq
 
-  db:
+
+  mysql:
     image: mysql
-    ports:
-      - "3306:3306"
+    expose:
+      - "3306"
     environment:
       MYSQL_ROOT_PASSWORD: root
-    networks:
-        mynet:
-          ipv4_address: 172.26.0.102
+      MYSQL_DATABASE: api
+      MYSQL_USER: apiuser
+      MYSQL_PASSWORD: apipw
 
-networks:
-  mynet:
-    driver: bridge
-    ipam:
-      config:
-      - subnet: 172.26.0.0/24
+
+  beanstalk:
+    build: ./.docker/beanstalk
+    expose:
+      - "11300"
+
+
+  rabbitmq:
+    image: rabbitmq
+    expose:
+      - "4369"
+      - "5671"
+      - "5672"
+      - "25672"
+
+
+  redis:
+    image: redis
+    expose:
+      - "6379"
+
+
+  memcached:
+    image: memcached
+    expose:
+      - "11211"
+
+
+
