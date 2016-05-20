@@ -1,6 +1,6 @@
 FROM debian:jessie
 
-RUN apt-get update && apt-get install -y autoconf apt-utils git gcc wget re2c php5-dev php5-common php5-cli php5-fpm php5-mcrypt php5-mysql php5-apcu php5-curl php5-intl
+RUN apt-get update && apt-get install -y autoconf apt-utils git gcc wget re2c php5-dev php5-common php5-cli php5-fpm php5-mcrypt php5-mysqlnd php5-apcu php5-curl php5-intl
 
 RUN git clone --depth=1 git://github.com/phalcon/cphalcon.git /usr/local/src/cphalcon
 RUN cd /usr/local/src/cphalcon/build && ./install ;\

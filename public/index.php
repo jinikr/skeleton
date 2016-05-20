@@ -1,7 +1,7 @@
 <?php
 
 use \Phalcon\DI\FactoryDefault as Di;
-use \Peanut\Bootstrap;
+use \App\Bootstrap;
 use \Peanut\Phalcon\Mvc\Micro;
 
 try
@@ -11,7 +11,7 @@ try
     include_once __BASE__."/vendor/autoload.php";
     include_once __BASE__.'/app/helpers/function.php';
 
-    $bootstrap = new Bootstrap\Yaml(new Di);
+    $bootstrap = new Bootstrap(new Di);
     $bootstrap(new Micro)->handle();
 }
 catch (\Exception $e)
