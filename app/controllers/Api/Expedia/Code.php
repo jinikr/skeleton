@@ -2,12 +2,14 @@
 namespace App\Controllers\Api\Expedia;
 
 use App\Validation;
+use Peanut\Phalcon\Pdo\Mysql as Db;
 use Phalcon\Validation\Validator\Regex;
+use App\Models\Expedia\Code as CodeModel;
 use Phalcon\Validation\Validator\PresenceOf;
 use Phalcon\Validation\Validator\StringLength;
 use App\Models\Expedia\CodeType as CodeTypeModel;
 
-class CodeType extends \Phalcon\Mvc\Controller
+class Code extends \Phalcon\Mvc\Controller
 {
     /**
      * @var array
@@ -25,33 +27,36 @@ class CodeType extends \Phalcon\Mvc\Controller
         // validate input
         $validation = new Validation();
         $validation
-            ->add(['page', 'per_page', 'parent_id'], new Regex([
+            ->add(['page', 'per_page', 'type'], new Regex([
                 'pattern'    => '/\d+/',
                 'allowEmpty' => true
             ]))
             ->validate($request->getQuery());
 
-        $offset   = $request->get('page', 'int', 0);
-        $limit    = $request->get('per_page', 'int', 10);
-        $parentId = $request->get('parent_id', 'int', 0);
+        $offset = $request->get('page', 'int', 0);
+        $limit  = $request->get('per_page', 'int', 10);
+        $typeId = $request->get('type', 'int', 0);
 
-        list($total, $result) = CodeTypeModel::getList($offset, $limit, $parentId);
+        list($total, $results) = CodeModel::getList($offset, $limit, $typeId);
 
         return $response
             ->setContentType('application/json')
             ->setJsonContent([
                 'total'   => $total,
-                'results' => $result
+                'results' => $results
             ]);
     }
 
     /**
      * @param $data
      */
-    private function codeTypeValidate($data)
+    private function codeValidate($data)
     {
         $validation = new Validation();
         $validation
+            ->add('type_id', new Regex([
+                'pattern' => '/\d+/'
+            ]))
             ->add('name', new PresenceOf())
             ->add('name', new StringLength([
                 'max' => 50,
@@ -60,19 +65,32 @@ class CodeType extends \Phalcon\Mvc\Controller
             ->add('name', new Regex([
                 'pattern' => '/^\S.*\S$/'
             ]))
-            ->add('parent_id', new Regex([
-                'pattern'    => '/\d+/',
+            ->add('description', new Regex([
+                'pattern'    => '/^\S.*\S$/',
                 'allowEmpty' => true
             ]))
             ->validate($data);
 
-        if (array_key_exists('parent_id', $data) && !CodeTypeModel::get($data['parent_id'])) {
-            throw new \Exception('invalid parameter', 400);
+        if (!CodeTypeModel::get($data['type_id'])) {
+            throw new \Exception('invalid type id!');
+        }
+
+        if (array_key_exists('sub_codes', $data) && is_array($data['sub_codes'])) {
+            $validation = new Validation();
+            $validation->add('id', new Regex([
+                'pattern' => '/\d+/'
+            ]));
+
+            foreach ($data['sub_codes'] as $codeId) {
+                $validation->validate(['id' => $codeId]);
+            }
         }
 
         return [
-            'name'      => $data['name'],
-            'parent_id' => array_key_exists('parent_id', $data) ? $data['parent_id'] : 0
+            'type_id'     => $data['type_id'],
+            'name'        => $data['name'],
+            'description' => array_key_exists('description', $data) ? $data['description'] : '',
+            'sub_codes'   => $data['sub_codes']
         ];
     }
 
@@ -84,25 +102,28 @@ class CodeType extends \Phalcon\Mvc\Controller
         $request  = $this->request;
         $response = $this->response;
 
-        $codeType = $this->codeTypeValidate($request->getJsonRawBody(true));
+        $code = $this->codeValidate($request->getJsonRawBody(true));
 
-        // create code-type
-        $id = CodeTypeModel::create($codeType);
+        // create code
+        $id = Db::name('master')->transaction(function () use ($code) {
+            return CodeModel::create($code);
+        });
 
         if (!$id) {
-            throw new \Exception('create code-type failed!');
+            throw new \Exception('create code failed!');
         }
 
         return $response
             ->setContentType('application/json')
-            ->setJsonContent(CodeTypeModel::get($id, 'master'));
+            ->setJsonContent(CodeModel::get($id, 'master'));
     }
 
     /**
      * @param $id
      */
-    public function checkCodeTypeId($id)
+    public function checkCodeId($id)
     {
+        // validate input
         $validation = new Validation();
         $validation
             ->add('id', new Regex([
@@ -110,10 +131,10 @@ class CodeType extends \Phalcon\Mvc\Controller
             ]))
             ->validate(['id' => $id]);
 
-        $this->data = CodeTypeModel::get($id);
+        $this->data = CodeModel::get($id);
 
         if (!$this->data) {
-            throw new \Exception('not found code-type id!');
+            throw new \Exception('not found code id!');
         }
     }
 
@@ -138,25 +159,27 @@ class CodeType extends \Phalcon\Mvc\Controller
         $response = $this->response;
 
         $inputData = $request->getJsonRawBody(true);
-        $codeType  = $this->data;
+        $code      = $this->data;
 
         foreach ($inputData as $key => $value) {
-            if (array_key_exists($key, $codeType)) {
-                $codeType[$key] = $value;
+            if (array_key_exists($key, $code)) {
+                $code[$key] = $value;
             }
         }
 
-        $codeType       = $this->codeTypeValidate($codeType);
-        $codeType['id'] = $this->data['id'];
-        $result         = CodeTypeModel::update($codeType);
+        $code       = $this->codeValidate($code);
+        $code['id'] = $this->data['id'];
+        $result     = Db::name('master')->transaction(function () use ($code) {
+            return CodeModel::update($code);
+        });
 
         if (!$result) {
-            throw new \Exception('update code-type failed!');
+            throw new \Exception('update code failed!');
         }
 
         return $response
             ->setContentType('application/json')
-            ->setJsonContent(CodeTypeModel::get($codeType['id'], 'master'));
+            ->setJsonContent(CodeModel::get($code['id'], 'master'));
     }
 
     /**
@@ -168,17 +191,19 @@ class CodeType extends \Phalcon\Mvc\Controller
         $request  = $this->request;
         $response = $this->response;
 
-        $codeType       = $this->codeTypeValidate($request->getJsonRawBody(true));
-        $codeType['id'] = $this->data['id'];
-        $result         = CodeTypeModel::update($codeType);
+        $code       = $this->codeValidate($request->getJsonRawBody(true));
+        $code['id'] = $this->data['id'];
+        $result     = Db::name('master')->transaction(function () use ($code) {
+            return CodeModel::update($code);
+        });
 
         if (!$result) {
-            throw new \Exception('update code-type failed!');
+            throw new \Exception('update code failed!');
         }
 
         return $response
             ->setContentType('application/json')
-            ->setJsonContent(CodeTypeModel::get($codeType['id'], 'master'));
+            ->setJsonContent(CodeModel::get($code['id'], 'master'));
     }
 
     /**
@@ -187,10 +212,10 @@ class CodeType extends \Phalcon\Mvc\Controller
      */
     public function delete($id)
     {
-        $result = CodeTypeModel::delete($this->data['id']);
+        $result = CodeModel::delete($this->data['id']);
 
         if (!$result) {
-            throw new \Exception('delete code-type failed!');
+            throw new \Exception('delete code failed!');
         }
 
         return $this->response->setStatusCode(204);

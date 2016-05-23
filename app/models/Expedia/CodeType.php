@@ -2,117 +2,87 @@
 namespace App\Models\Expedia;
 
 use Peanut\Phalcon\Pdo\Mysql as Db;
-use Phalcon\Db\Column;
 
 class CodeType
 {
-    use \App\Traits\Model\QueryBuilder;
-    use \App\Models\Expedia\CodeTypeQuery;
-
-    private static function setListCondition(array &$bind, $parentId)
+    /**
+     * @param $offset
+     * @param $limit
+     * @param $parentId
+     */
+    public static function getList($offset, $limit, $parentId = false)
     {
-        $condition = "";
-        $bind = [];
-        if ($parentId !== false) {
-            $condition .= self::$and;
-            $condition .= self::$whereParentId;
-            self::setBind($bind, 'parent_id', $parentId);
+        $bindQuery      = "";
+        $bindParameters = [];
+
+        if (false !== $parentId) {
+            $bindQuery .= " AND parent_id = :parent_id ";
+            $bindParameters[':parent_id'] = (int) $parentId;
         }
-        return $condition;
-    }
 
-    public static function getTotalCount($parentId=false)
-    {
-        $bind = [];
-        $condition = self::setListCondition($bind, $parentId);
-        return Db::name('slave')->get1(
-            self::setQuery(
-                self::$totalCount, [
-                    'condition' => $condition
-                ]
-            ),
-            $bind['parameters'],
-            $bind['types']
+        $total = Db::name('slave')->get1(
+            "SELECT COUNT(*) AS count FROM expedia_code_type WHERE deleted = 0 ".$bindQuery,
+            $bindParameters
         );
-    }
 
-    public static function getList($offset=0, $limit=10, $parentId=false)
-    {
-        $bind = [];
-        $condition = self::setListCondition($bind, $parentId);
-
-        self::setBind($bind, 'offset', $offset, Column::BIND_PARAM_INT);
-        self::setBind($bind, 'limit', $limit, Column::BIND_PARAM_INT);
-
-        $result = Db::name('slave')->gets(
-            self::setQuery(
-                self::$list, [
-                    'condition' => $condition
-                ]
-            ),
-            $bind['parameters'],
-            $bind['types']
+        $results = Db::name('slave')->gets(
+            "SELECT * FROM expedia_code_type WHERE deleted = 0 $bindQuery ORDER BY id ASC LIMIT :limit OFFSET :offset",
+            array_merge($bindParameters, [
+                ':offset' => (int) $offset,
+                ':limit'  => (int) $limit
+            ])
         );
-        return $result;
+
+        return [$total, $results];
     }
 
-    public static function get($id, $db='slave')
+    /**
+     * @param $id
+     * @param $db
+     */
+    public static function get($id, $db = 'slave')
     {
-        $bind = [];
-        self::setBind($bind, 'id', $id, Column::BIND_PARAM_INT);
-
-        $result = Db::name($db)->get(
-            self::$get,
-            $bind['parameters'],
-            $bind['types']
-        );
-        return $result;
+        return Db::name($db)->get("SELECT * FROM expedia_code_type WHERE id = :id AND deleted = 0", [
+            ':id' => (int) $id
+        ]);
     }
 
+    /**
+     * @param $codeType
+     */
     public static function create($codeType)
     {
-        // validate
-        $validation = new CodeTypeValidation();
-        $validation->validate($codeType);
-
-        $bind = [];
-        self::setBind($bind, 'name', $codeType['name'], Column::BIND_PARAM_STR);
-        self::setBind($bind, 'parent_id', $codeType['parent_id'], Column::BIND_PARAM_INT);
-
         return Db::name('master')->setId(
-            self::$insert,
-            $bind['parameters'],
-            $bind['types']
+            "INSERT INTO expedia_code_type (name, parent_id) VALUES (:name, :parent_id)",
+            [
+                ':name'      => $codeType['name'],
+                ':parent_id' => (int) $codeType['parent_id']
+            ]
         );
     }
 
+    /**
+     * @param $codeType
+     */
     public static function update($codeType)
     {
-        // validate
-        $validation = new CodeTypeValidation();
-        $validation->validate($codeType);
-
-        $bind = [];
-        self::setBind($bind, 'id', $codeType['id'], Column::BIND_PARAM_INT);
-        self::setBind($bind, 'name', $codeType['name'], Column::BIND_PARAM_STR);
-        self::setBind($bind, 'parent_id', $codeType['parent_id'], Column::BIND_PARAM_INT);
-
         return Db::name('master')->set(
-            self::$update,
-            $bind['parameters'],
-            $bind['types']
+            "UPDATE expedia_code_type SET name = :name, parent_id = :parent_id WHERE id = :id",
+            [
+                ':name'      => $codeType['name'],
+                ':parent_id' => (int) $codeType['parent_id'],
+                ':id'        => (int) $codeType['id']
+            ]
         );
     }
 
+    /**
+     * @param $id
+     */
     public static function delete($id)
     {
-        $bind = [];
-        self::setBind($bind, 'id', $id, Column::BIND_PARAM_INT);
-
-        return Db::name('master')->set(
-            self::$delete,
-            $bind['parameters'],
-            $bind['types']
-        );
+        return Db::name('master')->set("UPDATE expedia_code_type SET deleted = 1 WHERE id = :id", [
+            ':id' => (int) $id
+        ]);
     }
 }
